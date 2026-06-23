@@ -1,0 +1,25 @@
+<section class="card mq-card">
+  <div class="card-body gap-3 p-6">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wide text-base-content/60">Today</p>
+      <h2 class="text-2xl font-black">Meal log</h2>
+    </div>
+
+  @for (meal of meals(); track meal.id) {
+    <button
+      type="button"
+      class="btn h-auto min-h-14 w-full justify-between border-base-300 px-4"
+      [class.btn-primary]="meal.id === selectedMealId()"
+      [class.btn-outline]="meal.id !== selectedMealId()"
+      (click)="mealSelected.emit(meal.id)"
+    >
+      <span>{{ meal.title }}</span>
+      @if (mealTotals(meal); as totals) {
+        <small>{{ totals.calories }} kcal - {{ totals.protein }}g protein</small>
+      }
+    </button>
+  } @empty {
+    <p class="text-base-content/60">No meals logged for this quest yet.</p>
+  }
+  </div>
+</section>

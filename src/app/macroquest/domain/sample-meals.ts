@@ -1,0 +1,53 @@
+import { MealDraftInput } from './macroquest.models';
+
+export const createSampleMeal = (): MealDraftInput => ({
+  title: 'Chicken avocado power bowl',
+  source: 'Sample prompt',
+  notes: 'High-protein lunch estimate with adjustable serving counts.',
+  items: [
+    {
+      id: 'food-chicken',
+      name: 'Grilled chicken breast',
+      servingLabel: '120 g',
+      servings: 1,
+      calories: 198,
+      protein: 37,
+      carbs: 0,
+      fat: 4,
+      confidence: 0.92,
+    },
+    {
+      id: 'food-rice',
+      name: 'Brown rice',
+      servingLabel: '1 cup cooked',
+      servings: 1,
+      calories: 216,
+      protein: 5,
+      carbs: 45,
+      fat: 2,
+      confidence: 0.78,
+    },
+    {
+      id: 'food-avocado',
+      name: 'Avocado',
+      servingLabel: '1/2 medium',
+      servings: 1,
+      calories: 120,
+      protein: 2,
+      carbs: 6,
+      fat: 11,
+      confidence: 0.72,
+    },
+    {
+      id: 'food-salsa',
+      name: 'Tomato salsa',
+      servingLabel: '1/4 cup',
+      servings: 1,
+      calories: 20,
+      protein: 1,
+      carbs: 4,
+      fat: 0,
+      confidence: 0.86,
+    },
+  ],
+});

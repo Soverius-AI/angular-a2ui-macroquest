@@ -1,0 +1,50 @@
+{
+  "name": "angular-a2ui-macroquest",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve --host 127.0.0.1 --port 4300",
+    "start:ui": "ng serve --host 127.0.0.1 --port 4300",
+    "start:runtime": "COPILOTKIT_TELEMETRY_DISABLED=true TMPDIR=/private/tmp tsx watch server/index.ts",
+    "start:llama:gemma4": "scripts/start-gemma4-llama-server.sh",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "test:integration": "playwright test --config playwright.config.ts"
+  },
+  "private": true,
+  "packageManager": "pnpm@10.33.4",
+  "dependencies": {
+    "@angular/cdk": "^22.0.0",
+    "@angular/common": "^22.0.0",
+    "@angular/compiler": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@angular/router": "^22.0.0",
+    "@copilotkit/angular": "^0.1.2",
+    "@copilotkit/runtime": "^1.61.0",
+    "@hono/node-server": "^2.0.0",
+    "@ngrx/signals": "^21.1.1",
+    "hono": "^4.12.15",
+    "lucide-angular": "^0.540.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@ag-ui/core": "0.0.57",
+    "@angular/build": "^22.0.1",
+    "@angular/cli": "^22.0.1",
+    "@angular/compiler-cli": "^22.0.0",
+    "@playwright/test": "^1.59.1",
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/node": "^25.9.3",
+    "daisyui": "^5.5.23",
+    "postcss": "^8.5.15",
+    "prettier": "^3.7.4",
+    "tailwindcss": "^4.3.1",
+    "tsx": "^4.21.0",
+    "typescript": "~6.0.2"
+  }
+}

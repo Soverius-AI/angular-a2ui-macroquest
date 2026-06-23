@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>MacroQuest meal photo fixture</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 900px;
+        overflow: hidden;
+        background: #eee4d7;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .table {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.75), transparent 24%),
+          linear-gradient(135deg, #d8c7ad, #f5efe4 55%, #c9b493);
+      }
+
+      .plate {
+        position: relative;
+        width: 690px;
+        height: 690px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at center, #f9f5ec 0 58%, #fefbf5 59% 67%, #d7d0c4 68% 70%, #fffaf2 71%),
+          #fffaf2;
+        box-shadow:
+          0 28px 62px rgba(67, 50, 30, 0.26),
+          inset 0 -18px 38px rgba(74, 59, 39, 0.14);
+      }
+
+      .rice,
+      .chicken,
+      .avocado,
+      .salsa,
+      .greens {
+        position: absolute;
+        filter: drop-shadow(0 9px 10px rgba(72, 50, 28, 0.18));
+      }
+
+      .rice {
+        left: 225px;
+        top: 180px;
+        width: 275px;
+        height: 260px;
+        border-radius: 48% 52% 48% 52%;
+        background:
+          radial-gradient(circle at 18% 28%, #fff4c6 0 5px, transparent 6px),
+          radial-gradient(circle at 50% 36%, #fff7d3 0 5px, transparent 6px),
+          radial-gradient(circle at 72% 64%, #f6deb1 0 5px, transparent 6px),
+          repeating-radial-gradient(circle at 42% 44%, #f7dfb0 0 6px, #fff4cb 7px 15px);
+      }
+
+      .chicken {
+        left: 148px;
+        top: 258px;
+        width: 250px;
+        height: 220px;
+      }
+
+      .strip {
+        position: absolute;
+        width: 112px;
+        height: 48px;
+        border-radius: 30px;
+        background: linear-gradient(160deg, #d89045, #b95d2c 65%, #7b391f);
+        box-shadow: inset 0 8px 10px rgba(255, 232, 160, 0.24);
+      }
+
+      .strip:nth-child(1) {
+        left: 8px;
+        top: 22px;
+        transform: rotate(-22deg);
+      }
+
+      .strip:nth-child(2) {
+        left: 92px;
+        top: 56px;
+        transform: rotate(16deg);
+      }
+
+      .strip:nth-child(3) {
+        left: 34px;
+        top: 108px;
+        transform: rotate(10deg);
+      }
+
+      .strip:nth-child(4) {
+        left: 126px;
+        top: 140px;
+        transform: rotate(-15deg);
+      }
+
+      .avocado {
+        left: 470px;
+        top: 260px;
+        width: 145px;
+        height: 210px;
+      }
+
+      .avo {
+        position: absolute;
+        width: 92px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(160deg, #c8e36d, #4c9a45 72%, #2f6f32);
+        border: 5px solid #244f27;
+      }
+
+      .avo:nth-child(1) {
+        left: 6px;
+        top: 18px;
+        transform: rotate(-38deg);
+      }
+
+      .avo:nth-child(2) {
+        left: 48px;
+        top: 82px;
+        transform: rotate(-16deg);
+      }
+
+      .avo:nth-child(3) {
+        left: 14px;
+        top: 146px;
+        transform: rotate(16deg);
+      }
+
+      .salsa {
+        left: 360px;
+        top: 472px;
+        width: 190px;
+        height: 105px;
+        border-radius: 48% 52% 54% 46%;
+        background:
+          radial-gradient(circle at 22% 32%, #ffe170 0 8px, transparent 9px),
+          radial-gradient(circle at 62% 42%, #fff0c6 0 6px, transparent 7px),
+          radial-gradient(circle at 78% 64%, #56a543 0 8px, transparent 9px),
+          repeating-radial-gradient(circle at 48% 50%, #c92424 0 12px, #e95033 13px 24px);
+      }
+
+      .greens {
+        left: 145px;
+        top: 470px;
+        width: 170px;
+        height: 120px;
+      }
+
+      .leaf {
+        position: absolute;
+        width: 86px;
+        height: 38px;
+        border-radius: 100% 0 100% 0;
+        background: linear-gradient(135deg, #7ccf61, #2f7d35);
+      }
+
+      .leaf:nth-child(1) {
+        left: 0;
+        top: 16px;
+        transform: rotate(14deg);
+      }
+
+      .leaf:nth-child(2) {
+        left: 62px;
+        top: 42px;
+        transform: rotate(-28deg);
+      }
+
+      .leaf:nth-child(3) {
+        left: 28px;
+        top: 74px;
+        transform: rotate(36deg);
+      }
+
+      .label {
+        position: absolute;
+        min-width: 150px;
+        border-radius: 18px;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.88);
+        color: #222;
+        font-size: 24px;
+        font-weight: 800;
+        text-align: center;
+        box-shadow: 0 8px 18px rgba(47, 33, 20, 0.16);
+      }
+
+      .l-rice {
+        left: 500px;
+        top: 130px;
+      }
+
+      .l-chicken {
+        left: 60px;
+        top: 188px;
+      }
+
+      .l-avocado {
+        right: 40px;
+        top: 230px;
+      }
+
+      .l-salsa {
+        right: 70px;
+        bottom: 130px;
+      }
+
+      .l-greens {
+        left: 78px;
+        bottom: 150px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="table">
+      <div class="plate" aria-label="Chicken rice bowl with avocado salsa and greens">
+        <div class="rice"></div>
+        <div class="chicken">
+          <span class="strip"></span>
+          <span class="strip"></span>
+          <span class="strip"></span>
+          <span class="strip"></span>
+        </div>
+        <div class="avocado">
+          <span class="avo"></span>
+          <span class="avo"></span>
+          <span class="avo"></span>
+        </div>
+        <div class="salsa"></div>
+        <div class="greens">
+          <span class="leaf"></span>
+          <span class="leaf"></span>
+          <span class="leaf"></span>
+        </div>
+        <div class="label l-rice">brown rice</div>
+        <div class="label l-chicken">grilled chicken</div>
+        <div class="label l-avocado">avocado</div>
+        <div class="label l-salsa">tomato salsa</div>
+        <div class="label l-greens">greens</div>
+      </div>
+    </div>
+  </body>
+</html>

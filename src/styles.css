@@ -1,0 +1,297 @@
+@import "tailwindcss" source(none);
+@source "./app/**/*.{html,ts}";
+@source "./index.html";
+@plugin "daisyui" {
+  themes: emerald --default, light;
+  include: button, card, badge, input, status;
+}
+
+@layer base {
+  html,
+  body {
+    min-height: 100%;
+    margin: 0;
+  }
+
+  body {
+    font-family:
+      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
+  }
+}
+
+@layer components {
+  /* ---- Page canvas: tinted, soft radial wash instead of flat grey ---- */
+  .macro-shell {
+    background-color: #eef2f6;
+    background-image:
+      radial-gradient(60rem 60rem at -10% -10%, rgba(16, 185, 129, 0.1), transparent 45%),
+      radial-gradient(50rem 50rem at 110% -5%, rgba(8, 145, 178, 0.09), transparent 40%);
+  }
+
+  /* ---- Shared card surface (workbench, timeline, panel) ---- */
+  .mq-card {
+    @apply rounded-3xl border border-white bg-white transition-all duration-200;
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 8px 24px -12px rgba(15, 23, 42, 0.12);
+  }
+
+  .mq-card:hover {
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.05),
+      0 18px 40px -16px rgba(15, 23, 42, 0.22);
+  }
+
+  /* ---- Hero "daily quest" panel ---- */
+  .mq-hero {
+    @apply relative overflow-hidden rounded-3xl text-white;
+    background-image: linear-gradient(135deg, #047857 0%, #0d9488 52%, #0891b2 100%);
+    box-shadow:
+      0 20px 45px -18px rgba(13, 148, 136, 0.65),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+
+  .mq-hero::before {
+    content: "";
+    @apply pointer-events-none absolute h-72 w-72 rounded-full;
+    top: -7rem;
+    right: -5rem;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .mq-hero::after {
+    content: "";
+    @apply pointer-events-none absolute h-72 w-72 rounded-full;
+    bottom: -9rem;
+    left: -4rem;
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  /* ---- Macro score ring (white gauge on the hero gradient) ---- */
+  .mq-ring {
+    @apply relative grid h-36 w-36 shrink-0 place-items-center rounded-full;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  }
+
+  /* Inner disc sits above the conic gradient, revealing only the outer ring track */
+  .mq-ring::after {
+    content: "";
+    @apply absolute rounded-full;
+    /* 72% of 144px = 104px — large enough to cover the white sector at any progress value */
+    width: 72%;
+    height: 72%;
+    z-index: 1;
+    background: rgba(4, 120, 87, 0.55);
+    backdrop-filter: blur(4px);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  }
+
+  .mq-ring > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ---- Macro stat cards ---- */
+  .mq-stat {
+    @apply relative overflow-hidden rounded-3xl border border-white bg-white p-4 transition-all duration-200;
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 10px 26px -14px rgba(15, 23, 42, 0.18);
+  }
+
+  .mq-stat:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.05),
+      0 22px 44px -16px var(--mq-glow, rgba(15, 23, 42, 0.28));
+  }
+
+  .mq-stat[data-macro="calories"] {
+    --mq-a: #10b981;
+    --mq-b: #0d9488;
+    --mq-glow: rgba(16, 185, 129, 0.45);
+  }
+  .mq-stat[data-macro="protein"] {
+    --mq-a: #6366f1;
+    --mq-b: #3b82f6;
+    --mq-glow: rgba(99, 102, 241, 0.45);
+  }
+  .mq-stat[data-macro="carbs"] {
+    --mq-a: #f59e0b;
+    --mq-b: #f97316;
+    --mq-glow: rgba(245, 158, 11, 0.45);
+  }
+  .mq-stat[data-macro="fat"] {
+    --mq-a: #f43f5e;
+    --mq-b: #ec4899;
+    --mq-glow: rgba(244, 63, 94, 0.45);
+  }
+
+  .mq-stat-glow {
+    @apply pointer-events-none absolute h-28 w-28 rounded-full opacity-25 blur-2xl;
+    top: -2.5rem;
+    right: -2rem;
+    background: var(--mq-a);
+  }
+
+  .mq-chip {
+    @apply grid h-9 w-9 place-items-center rounded-xl text-white;
+    background-image: linear-gradient(135deg, var(--mq-a), var(--mq-b));
+    box-shadow: 0 8px 18px -8px var(--mq-glow);
+  }
+
+  .mq-chip svg {
+    @apply h-4 w-4;
+  }
+
+  .mq-stat-pct {
+    @apply text-sm font-extrabold;
+    color: var(--mq-a);
+  }
+
+  .mq-stat-label {
+    @apply text-[0.7rem] font-bold uppercase tracking-[0.12em] text-slate-400;
+  }
+
+  .mq-stat-value {
+    @apply text-2xl font-black leading-tight text-slate-800;
+  }
+
+  .mq-stat-sub {
+    @apply text-xs font-semibold text-slate-400;
+  }
+
+  .mq-bar {
+    @apply h-2 w-full overflow-hidden rounded-full bg-slate-100;
+  }
+
+  .mq-bar-fill {
+    @apply block h-full rounded-full;
+    min-width: 0.5rem;
+    background-image: linear-gradient(90deg, var(--mq-a), var(--mq-b));
+    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ---- Gradient primary button ---- */
+  .mq-btn-primary {
+    @apply border-0 text-white;
+    background-image: linear-gradient(135deg, #047857, #0d9488);
+    box-shadow: 0 12px 24px -12px rgba(13, 148, 136, 0.8);
+  }
+
+  .mq-btn-primary:hover {
+    background-image: linear-gradient(135deg, #059669, #0e9488);
+    box-shadow: 0 16px 30px -12px rgba(13, 148, 136, 0.9);
+  }
+
+  .macro-shell .copilot-panel .copilotKitChat {
+    background: transparent;
+  }
+
+  .macro-shell .copilot-panel copilot-chat {
+    height: 100%;
+  }
+
+  /* CopilotKit's scroll wrapper hardcodes height: calc(100vh - 9rem), sized
+     for its own full-viewport demo page (whose header is exactly 9rem).
+     Embedded in this panel the wrapper overshoots the panel height, pushing
+     the scroll bottom (and the last messages) beneath the floating input and
+     making the scroll-to-bottom button target a bottom that lies outside the
+     panel. Pin it to the panel's real height instead. */
+  .macro-shell .copilot-panel copilot-chat-view-scroll-view > div {
+    height: 100% !important;
+  }
+
+  /* Stock CopilotKit measures the floating input's height once, during the
+     welcome screen — where the input container doesn't exist yet — and gives
+     up after ~5.6s of retries. inputContainerHeight then stays 0 forever:
+     the scroll reserve collapses to 32px (messages hide under the input) and
+     the scroll-to-bottom button is placed at bottom: 16px, on top of the
+     input. Floor both to the input stack's real footprint (~132px + slack).
+     !important intentionally beats the component's inline styles. */
+  .macro-shell .copilot-panel copilot-chat-view-scroll-view [style*="padding-bottom"] {
+    padding-bottom: 180px !important;
+  }
+
+  .macro-shell .copilot-panel copilot-chat-view-scroll-view [class*="cpk:z-30"][style*="bottom"] {
+    bottom: 180px !important;
+  }
+
+  .macro-shell .copilot-panel copilot-chat-message-view {
+    gap: 0.75rem;
+    padding: 1rem 0.75rem 0;
+  }
+
+  .macro-shell .copilot-panel copilot-chat-user-message-renderer {
+    @apply max-w-[86%] rounded-box bg-neutral px-4 py-3 text-sm leading-relaxed text-neutral-content shadow-md;
+  }
+
+  .macro-shell .copilot-panel copilot-chat-assistant-message > div {
+    @apply max-w-[94%] py-2 text-base-content;
+  }
+
+  .macro-shell .copilot-panel copilot-chat-assistant-message-renderer > div {
+    @apply rounded-box border border-base-300 bg-base-100 px-4 py-3 leading-relaxed shadow-sm;
+  }
+
+  .macro-shell .copilot-panel copilot-chat-assistant-message-renderer p {
+    margin: 0;
+  }
+
+  .macro-shell .copilot-panel .copilotKitInput {
+    @apply rounded-box border border-base-300 bg-base-100 shadow-lg;
+  }
+
+  .macro-shell .copilot-panel copilot-chat-input button {
+    @apply rounded-lg bg-primary text-primary-content;
+  }
+
+  .macro-shell .copilot-panel copilot-chat-view-disclaimer {
+    @apply block px-4 pt-2 text-center text-xs leading-snug text-base-content/60;
+  }
+
+  .macro-shell .copilot-panel copilot-a2ui-activity-renderer {
+    @apply my-3 block;
+  }
+
+  .macro-shell .copilot-panel cpk-a2ui-surface {
+    @apply block overflow-hidden rounded-box border border-primary/20 bg-base-100 shadow-md;
+  }
+
+  .macro-shell .copilot-panel cpk-a2ui-surface .a2ui-surface {
+    @apply p-4;
+  }
+
+  .macro-shell .copilot-panel cpk-a2ui-surface h2 {
+    @apply mb-2 text-lg font-semibold text-base-content;
+  }
+
+  /* Lit's styleMap serializes inline styles WITHOUT a space after the colon
+     ("flex-direction:row"), so keep both attribute spellings covered. */
+  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction: row"],
+  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction:row"] {
+    @apply my-3 flex-wrap gap-2;
+  }
+
+  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction: row"] > cpk-a2ui-node,
+  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction:row"] > cpk-a2ui-node {
+    flex: 1 1 6rem;
+  }
+
+  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction: row"] span,
+  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction:row"] span {
+    @apply block min-h-10 rounded-box border border-base-300 bg-base-200 px-3 py-2 font-semibold text-base-content;
+  }
+
+  .macro-shell .copilot-panel cpk-a2ui-surface button {
+    @apply mt-2 min-h-11 w-full px-4 py-3 font-bold;
+    border-radius: var(--radius-field) !important;
+    background: var(--color-primary) !important;
+    color: var(--color-primary-content) !important;
+  }
+
+  .macro-shell .copilot-panel cpk-a2ui-surface button span {
+    @apply min-h-0 border-0 bg-transparent p-0 text-inherit;
+  }
+}
