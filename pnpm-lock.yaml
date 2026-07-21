@@ -44,9 +44,6 @@ importers:
       hono:
         specifier: ^4.12.15
         version: 4.12.25
-      lucide-angular:
-        specifier: ^0.540.0
-        version: 0.540.0(@angular/common@22.0.1(@angular/core@22.0.1(@angular/compiler@22.0.1)(rxjs@7.8.1))(rxjs@7.8.1))(@angular/core@22.0.1(@angular/compiler@22.0.1)(rxjs@7.8.1))
       rxjs:
         specifier: ~7.8.0
         version: 7.8.1
