@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CopilotChat } from '@copilotkit/angular';
 import { MacroQuestStore } from '../application/macroquest.store';
 import { getMealTotals } from '../domain/nutrition';
@@ -10,7 +10,6 @@ import { MealWorkbench } from './meal-workbench';
   selector: 'mq-shell',
   imports: [CopilotChat, MacroDashboard, MealTimeline, MealWorkbench],
   templateUrl: './macroquest-shell.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MacroQuestShell {
   protected readonly store = inject(MacroQuestStore);
