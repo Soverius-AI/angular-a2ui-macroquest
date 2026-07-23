@@ -1,75 +1,109 @@
 # MacroQuest Angular A2UI Demo
 
-MacroQuest is an ignored Angular demo app for showing CopilotKit Angular A2UI,
+MacroQuest is an Angular demo app for showing CopilotKit Angular A2UI,
 CopilotKit chat controls, NgRx Signal Store, and a local Gemma 4 model server.
+
 Gemma authors the A2UI component tree; the CopilotKit runtime backend validates
 and forwards it through A2UI middleware so Angular renders the Lit-backed
 `cpk-a2ui-surface` web component.
 
-## Install
+## Configuration
 
-Use the pinned Node version:
-
-```bash
-nvm use
-```
-
-The demo has its own ignored `pnpm-workspace.yaml` so local CopilotKit
-`workspace:*` dependencies resolve without changing the repository root
-workspace.
+Install the dependencies via pnpm:
 
 ```bash
 pnpm install
-pnpm exec playwright install chromium
 ```
 
-## Local Gemma 4 Server
-
-Install or upgrade llama.cpp:
+Install llama.cpp to run the local Gemma 4 model server:
 
 ```bash
 brew install llama.cpp
-# or
-brew upgrade llama.cpp
 ```
 
-Start the Gemma 4 OpenAI-compatible server:
+Download the Gemma 4 model weights by starting llama.cpp:
 
 ```bash
-pnpm run start:llama:gemma4
+pnpm run start:llama
 ```
 
-The script defaults to:
+The script defaults to the Unsloth Gemma 4 12B QAT GGUF on Hugging Face. On first
+run, `llama-server` downloads weights into the normal Hugging Face cache when they
+are not already present:
 
 ```bash
 llama-server \
-  --hf-repo ggml-org/gemma-4-12B-it-GGUF:Q8_0 \
-  --alias gemma-4-12b-it \
+  --hf-repo unsloth/gemma-4-12B-it-qat-GGUF \
+  --hf-file gemma-4-12B-it-qat-UD-Q4_K_XL.gguf \
+  --alias gemma-4-12b-it-qat \
   --host 127.0.0.1 \
   --port 8080
 ```
 
-Useful variants:
+To use a GGUF you already have on disk instead of downloading from Hugging Face:
 
 ```bash
-pnpm run start:llama:gemma4 -- --dry-run
-pnpm run start:llama:gemma4 -- --download-only
-GEMMA4_QUANT=Q4_K_M pnpm run start:llama:gemma4
-GEMMA4_HF_FILE=gemma-4-12B-it-Q8_0.gguf pnpm run start:llama:gemma4
+LLAMA_MODEL=/path/to/your-model.gguf \
+LLAMA_MMPROJ_PATH=/path/to/mmproj-F16.gguf \
+LLAMA_ALIAS=your-model-alias \
+pnpm run start:llama
 ```
 
-The 12B Q8_0 weights are roughly 13 GB. On smaller machines use
-`GEMMA4_QUANT=Q4_K_M`, or point `GEMMA4_HF_REPO` back at
-`ggml-org/gemma-4-E2B-it-GGUF` with `LLAMA_ALIAS=gemma-4-e2b-it`.
+`LLAMA_MMPROJ_PATH` is only needed for the local-file override when you want
+meal-photo vision. The default Hugging Face path uses `--mmproj-auto`.
 
 If Hugging Face requires authentication for a selected repo or file, export
 `HF_TOKEN` before starting the server.
+
+## Start everything
+
+Run llama.cpp, the CopilotKit runtime, and the Angular app in one terminal:
+
+```bash
+pnpm run start:all
+```
+
+Then open `http://127.0.0.1:4200`. Ctrl+C stops all three processes.
+
+You can still start them separately with `pnpm run start:llama`,
+`pnpm run start:runtime`, and `pnpm run start:ui`.
+
+## OpenRouter (tool calls only)
+
+In `openrouter` mode, the runtime uses CopilotKit’s normal `BuiltInAgent({ model })`
+wired to OpenRouter via `@ai-sdk/openai`.
+
+This is the “standard” CopilotKit experience: the model may call frontend tools
+(for example, updating goals or other registered tools), but the MacroQuest
+custom pipeline that *guarantees* A2UI catalog surfaces / sandbox widgets is not
+used.
+
+Set your key and model in `.env` (gitignored):
+
+```bash
+cp .env.example .env
+# edit .env — set OPENROUTER_API_KEY and optionally OPENROUTER_MODEL
+```
+
+Then run:
+
+```bash
+pnpm run start:all:openrouter
+```
+
+Relevant variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `COPILOT_MODEL_PROVIDER` | `local` or `openrouter` |
+| `OPENROUTER_API_KEY` | Your OpenRouter API key |
+| `OPENROUTER_MODEL` | Model id (default `google/gemini-2.5-flash`) |
 
 ## Runtime
 
 ```bash
 LOCAL_MODEL_BASE_URL=http://127.0.0.1:8080/v1 \
-LOCAL_MODEL_NAME=gemma-4-12b-it \
+LOCAL_MODEL_NAME=gemma-4-12b-it-qat \
 LOCAL_MODEL_API_KEY=local-llama \
 pnpm run start:runtime
 ```
@@ -97,7 +131,7 @@ resulting `a2ui-surface` activity.
 pnpm run start:ui
 ```
 
-Open `http://127.0.0.1:4300`.
+Open `http://127.0.0.1:4200`.
 
 ## Generating UI: Prompt Sequence
 
@@ -173,5 +207,5 @@ model-generated A2UI tool payload.
 Print the model server command without downloading:
 
 ```
-pnpm run start:llama:gemma4 -- --dry-run
+pnpm run start:llama -- --dry-run
 ```

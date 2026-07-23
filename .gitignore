@@ -45,3 +45,8 @@ Thumbs.db
 
 # Local CopilotKit tarballs (see pnpm-workspace.yaml overrides)
 /.copilotkit-local/
+
+# Local secrets / provider config (see .env.example)
+.env
+.env.local
+.env.*.local
