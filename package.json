@@ -29,7 +29,6 @@
     "@hono/node-server": "^2.0.0",
     "@ngrx/signals": "^21.1.1",
     "dotenv": "^17.4.2",
-    "@ai-sdk/openai": "^3.0.86",
     "hono": "^4.12.15",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
