@@ -26,17 +26,21 @@ export function connectMacroQuestSandboxStore(store: MacroQuestSandboxStore): vo
 
 export async function applyMacroSwapFromSandbox(input: MacroSwapSandboxArgs) {
   if (!sandboxStore) {
+    const message = 'MacroQuest is not ready yet.';
     return {
       ok: false,
-      message: 'MacroQuest is not ready yet.',
+      message,
+      error: message,
     };
   }
 
   const meal = sandboxStore.applyMacroSwap(input);
   if (!meal) {
+    const message = 'Analyze or select a meal before applying a sandbox swap.';
     return {
       ok: false,
-      message: 'Analyze or select a meal before applying a sandbox swap.',
+      message,
+      error: message,
     };
   }
 
