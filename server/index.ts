@@ -8,7 +8,6 @@ import {
   createCopilotEndpoint,
   InMemoryAgentRunner,
 } from "@copilotkit/runtime/v2";
-import { createOpenAI } from "@ai-sdk/openai";
 import { randomUUID } from "node:crypto";
 import type { z } from "zod";
 import type {
@@ -74,7 +73,7 @@ const maxOutputTokens = Number(
 );
 const openrouterBaseUrl = "https://openrouter.ai/api/v1";
 const openrouterModel =
-  process.env.OPENROUTER_MODEL?.trim() || "google/gemini-2.5-flash";
+  process.env.OPENROUTER_MODEL?.trim() || "google/gemini-2.5-pro";
 const openrouterApiKey = process.env.OPENROUTER_API_KEY?.trim() ?? "";
 
 if (modelProvider === "openrouter" && !openrouterApiKey) {
@@ -727,22 +726,7 @@ function* toolCallEvents(parentMessageId: string, toolCallName: string, args: un
   } as any;
 }
 
-function createOpenRouterAgent() {
-  const openrouter = createOpenAI({
-    apiKey: openrouterApiKey,
-    baseURL: "https://openrouter.ai/api/v1",
-    headers: {
-      "HTTP-Referer": "http://127.0.0.1:4200",
-      "X-Title": "MacroQuest",
-    },
-  });
-
-  return new BuiltInAgent({
-    model: openrouter.chat(openrouterModel),
-  });
-}
-
-const customAgent = new BuiltInAgent({
+const agent = new BuiltInAgent({
   type: "custom",
   factory: async ({ input, abortSignal }) =>
     (async function* () {
@@ -888,11 +872,6 @@ const customAgent = new BuiltInAgent({
     })(),
 });
 
-const agent =
-  modelProvider === "openrouter"
-    ? createOpenRouterAgent()
-    : customAgent;
-
 const runtime = new CopilotRuntime({
   agents: { default: agent },
   runner: new InMemoryAgentRunner(),
@@ -935,8 +914,7 @@ app.get("/health", (c) =>
     ok: true,
     runtime: "macroquest",
     provider: modelProvider,
-    agent:
-      modelProvider === "openrouter" ? "copilotkit-built-in" : "macroquest-custom",
+    agent: "macroquest-custom",
     modelBaseUrl,
     modelName,
   }),
@@ -965,11 +943,8 @@ server.on("error", (error: NodeJS.ErrnoException) => {
 console.log(
   `MacroQuest runtime listening at http://127.0.0.1:${port}/api/copilotkit`,
 );
-console.log(`Model provider: ${modelProvider}`);
 console.log(
-  modelProvider === "openrouter"
-    ? "Using CopilotKit BuiltInAgent model wiring (tool calls)"
-    : "Using custom MacroQuest agent (A2UI catalog + sandbox widgets)",
+  `Model provider: ${modelProvider} (custom MacroQuest agent → A2UI / sandbox)`,
 );
 console.log(`Model endpoint: ${modelBaseUrl}`);
 console.log(`Model name: ${modelName}`);
