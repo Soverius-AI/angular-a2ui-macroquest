@@ -23,7 +23,7 @@ import {
  * the `onInit` hook supplies the injection context the CopilotKit `connect*`/
  * `register*` helpers require.
  */
-export function withCopilot() {
+export function withCopilotKit() {
   return signalStoreFeature(
     {
       state: type<MacroQuestStateSlice>(),
