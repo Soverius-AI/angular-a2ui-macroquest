@@ -8,7 +8,7 @@ async function expectRuntimeReady(request: APIRequestContext) {
       ok: true,
       runtime: 'macroquest',
       modelBaseUrl: 'http://127.0.0.1:8080/v1',
-      modelName: 'gemma-4-12b-it',
+      modelName: 'gemma-4-12b-it-qat',
     }),
   );
 }

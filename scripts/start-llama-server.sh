@@ -3,26 +3,31 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Start a local llama.cpp OpenAI-compatible server for the MacroQuest Gemma 4 demo.
+Start a local llama.cpp OpenAI-compatible server for MacroQuest.
 
-This script uses llama-server's Hugging Face integration so the GGUF model is
-downloaded into the normal Hugging Face cache on first run.
+By default this uses the Unsloth Gemma 4 12B QAT GGUF on Hugging Face. llama-server
+downloads weights into the normal Hugging Face cache on first run when they are not
+already present.
 
 Usage:
-  scripts/start-gemma4-llama-server.sh [--dry-run] [--download-only] [--print-runtime-env]
+  scripts/start-llama-server.sh [--dry-run] [--download-only] [--print-runtime-env]
 
 Options:
   --dry-run             Print the commands without starting or downloading.
-  --download-only       Use the hf CLI to prefetch the selected Gemma 4 GGUF.
+  --download-only       Use the hf CLI to prefetch the selected GGUF.
   --print-runtime-env   Print the runtime env vars and exit.
   -h, --help            Show this help.
 
 Environment:
-  GEMMA4_HF_REPO        Hugging Face GGUF repo.
-                        Default: ggml-org/gemma-4-12B-it-GGUF
-  GEMMA4_QUANT          Quant suffix used by llama-server --hf-repo.
-                        Default: Q8_0
-  GEMMA4_HF_FILE        Optional exact GGUF filename. Overrides GEMMA4_QUANT.
+  LLAMA_MODEL           Model to load. Either:
+                        - Hugging Face repo + GGUF filename:
+                          org/repo/model-name.gguf
+                        - Local filesystem path to a .gguf you already have
+                        Default:
+                          unsloth/gemma-4-12B-it-qat-GGUF/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
+  LLAMA_MMPROJ_PATH     Optional multimodal projector path. Only used with a
+                        local LLAMA_MODEL file (required for meal-photo vision
+                        when not loading from Hugging Face).
   LLAMA_SERVER_BIN      llama-server binary. Default: first llama-server on PATH.
   LLAMA_HOST            Bind host. Default: 127.0.0.1
   LLAMA_PORT            Bind port. Default: 8080
@@ -31,7 +36,7 @@ Environment:
                         built-in chat web UI at http://host:port/ until you
                         paste the key into its settings.
   LLAMA_ALIAS           OpenAI model id exposed by llama-server.
-                        Default: gemma-4-12b-it
+                        Default: gemma-4-12b-it-qat
   LLAMA_CONTEXT_SIZE    Context size. Default: 32768
   LLAMA_PARALLEL        Number of llama-server slots. Default: 1
   LLAMA_UBATCH_SIZE     Physical batch size for prompt/image encoding.
@@ -48,7 +53,7 @@ Environment:
 
 Runtime pairing:
   LOCAL_MODEL_BASE_URL=http://127.0.0.1:8080/v1
-  LOCAL_MODEL_NAME=gemma-4-12b-it
+  LOCAL_MODEL_NAME=gemma-4-12b-it-qat
   LOCAL_MODEL_API_KEY=local-llama
   pnpm run start:runtime
 USAGE
@@ -87,9 +92,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-GEMMA4_HF_REPO="${GEMMA4_HF_REPO:-ggml-org/gemma-4-12B-it-GGUF}"
-GEMMA4_QUANT="${GEMMA4_QUANT:-Q8_0}"
-GEMMA4_HF_FILE="${GEMMA4_HF_FILE:-}"
+LLAMA_MODEL="${LLAMA_MODEL:-unsloth/gemma-4-12B-it-qat-GGUF/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf}"
+LLAMA_MMPROJ_PATH="${LLAMA_MMPROJ_PATH:-}"
 
 LLAMA_SERVER_BIN="${LLAMA_SERVER_BIN:-}"
 if [[ -z "$LLAMA_SERVER_BIN" ]]; then
@@ -102,7 +106,7 @@ LLAMA_PORT="${LLAMA_PORT:-8080}"
 # built-in chat web UI at / cannot authenticate itself, so a key just breaks
 # it with "Invalid API Key". Export LLAMA_API_KEY to opt back in.
 LLAMA_API_KEY="${LLAMA_API_KEY:-}"
-LLAMA_ALIAS="${LLAMA_ALIAS:-gemma-4-12b-it}"
+LLAMA_ALIAS="${LLAMA_ALIAS:-gemma-4-12b-it-qat}"
 LLAMA_CONTEXT_SIZE="${LLAMA_CONTEXT_SIZE:-32768}"
 LLAMA_PARALLEL="${LLAMA_PARALLEL:-1}"
 LLAMA_UBATCH_SIZE="${LLAMA_UBATCH_SIZE:-2048}"
@@ -134,14 +138,44 @@ print_env() {
   fi
 }
 
+resolve_model() {
+  if [[ -f "$LLAMA_MODEL" ]]; then
+    use_local_model=1
+    local_model_path="$LLAMA_MODEL"
+    return 0
+  fi
+
+  if [[ "$LLAMA_MODEL" == */*.gguf ]]; then
+    use_local_model=0
+    hf_model_file="${LLAMA_MODEL##*/}"
+    hf_model_repo="${LLAMA_MODEL%/*}"
+    if [[ -z "$hf_model_repo" || -z "$hf_model_file" ]]; then
+      echo "Invalid LLAMA_MODEL Hugging Face value: $LLAMA_MODEL" >&2
+      echo "Expected org/repo/model-name.gguf" >&2
+      exit 1
+    fi
+    return 0
+  fi
+
+  echo "LLAMA_MODEL must be a local .gguf file or org/repo/model-name.gguf" >&2
+  echo "Got: $LLAMA_MODEL" >&2
+  exit 1
+}
+
 if [[ "$print_runtime_env" -eq 1 ]]; then
   print_env
   exit 0
 fi
 
-model_ref="$GEMMA4_HF_REPO"
-if [[ -z "$GEMMA4_HF_FILE" && "$model_ref" != *:* ]]; then
-  model_ref="${model_ref}:${GEMMA4_QUANT}"
+use_local_model=0
+local_model_path=""
+hf_model_repo=""
+hf_model_file=""
+resolve_model
+
+if [[ "$download_only" -eq 1 && "$use_local_model" -eq 1 ]]; then
+  echo "--download-only is not compatible with a local LLAMA_MODEL file." >&2
+  exit 2
 fi
 
 download_cmd=()
@@ -151,12 +185,7 @@ if [[ "$download_only" -eq 1 ]]; then
     exit 1
   fi
 
-  download_cmd=(hf download "$GEMMA4_HF_REPO")
-  if [[ -n "$GEMMA4_HF_FILE" ]]; then
-    download_cmd+=("$GEMMA4_HF_FILE")
-  else
-    download_cmd+=(--include "*${GEMMA4_QUANT}*.gguf")
-  fi
+  download_cmd=(hf download "$hf_model_repo" "$hf_model_file")
   if [[ "$dry_run" -eq 1 ]]; then
     download_cmd+=(--dry-run)
   fi
@@ -171,18 +200,30 @@ server_cmd=(
   --parallel "$LLAMA_PARALLEL"
   --ubatch-size "$LLAMA_UBATCH_SIZE"
   --jinja
-  --mmproj-auto
   --image-max-tokens "$LLAMA_IMAGE_MAX_TOKENS"
   --reasoning "$LLAMA_REASONING"
   --reasoning-budget "$LLAMA_REASONING_BUDGET"
-  --hf-repo "$model_ref"
 )
+
+if [[ "$use_local_model" -eq 1 ]]; then
+  server_cmd+=(--model "$local_model_path")
+  if [[ -n "$LLAMA_MMPROJ_PATH" ]]; then
+    if [[ ! -f "$LLAMA_MMPROJ_PATH" ]]; then
+      echo "LLAMA_MMPROJ_PATH does not point to a file: $LLAMA_MMPROJ_PATH" >&2
+      exit 1
+    fi
+    server_cmd+=(--mmproj "$LLAMA_MMPROJ_PATH")
+  fi
+else
+  server_cmd+=(
+    --mmproj-auto
+    --hf-repo "$hf_model_repo"
+    --hf-file "$hf_model_file"
+  )
+fi
 
 if [[ -n "$LLAMA_API_KEY" ]]; then
   server_cmd+=(--api-key "$LLAMA_API_KEY")
-fi
-if [[ -n "$GEMMA4_HF_FILE" ]]; then
-  server_cmd+=(--hf-file "$GEMMA4_HF_FILE")
 fi
 if [[ -n "$LLAMA_THREADS" ]]; then
   server_cmd+=(--threads "$LLAMA_THREADS")
@@ -191,9 +232,15 @@ if [[ -n "$LLAMA_GPU_LAYERS" ]]; then
   server_cmd+=(--gpu-layers "$LLAMA_GPU_LAYERS")
 fi
 
-echo "Gemma 4 model: $model_ref"
-if [[ -n "$GEMMA4_HF_FILE" ]]; then
-  echo "Gemma 4 file: $GEMMA4_HF_FILE"
+if [[ "$use_local_model" -eq 1 ]]; then
+  echo "Model: local file $local_model_path"
+  if [[ -n "$LLAMA_MMPROJ_PATH" ]]; then
+    echo "mmproj: $LLAMA_MMPROJ_PATH"
+  else
+    echo "mmproj: not set (meal-photo vision may not work with a local GGUF)"
+  fi
+else
+  echo "Model: $hf_model_repo/$hf_model_file"
 fi
 echo "Runtime environment for MacroQuest:"
 print_env

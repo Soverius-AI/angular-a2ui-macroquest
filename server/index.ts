@@ -51,7 +51,7 @@ const modelBaseUrl =
 const modelName =
   process.env.LOCAL_MODEL_NAME?.trim() ??
   process.env.LOCAL_LLAMA_MODEL?.trim() ??
-  "gemma-4-12b-it";
+  "gemma-4-12b-it-qat";
 const modelApiKey =
   process.env.LOCAL_MODEL_API_KEY?.trim() ??
   process.env.LOCAL_LLAMA_API_KEY?.trim() ??
