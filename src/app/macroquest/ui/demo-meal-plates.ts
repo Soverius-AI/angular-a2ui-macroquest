@@ -25,23 +25,26 @@ const MEAL_PHOTO_PROMPT = 'What am I eating?';
         @for (plate of plates; track plate.id) {
           <button
             type="button"
-            class="group flex w-20 shrink-0 flex-col gap-1.5 text-left disabled:opacity-60"
+            class="group flex w-20 shrink-0 cursor-pointer flex-col gap-1.5 text-left disabled:cursor-not-allowed disabled:opacity-60"
             [disabled]="attachingPlateId() !== null"
             [attr.aria-busy]="attachingPlateId() === plate.id"
+            [attr.aria-pressed]="selectedPlateId() === plate.id"
             [attr.aria-label]="'Attach ' + plate.label + ' photo'"
             (click)="attachPlate(plate)"
           >
             <span
-              class="relative block overflow-hidden rounded-xl border border-base-300/80 bg-base-200 transition group-hover:border-primary/50 group-hover:shadow-sm group-focus-visible:border-primary group-focus-visible:ring-2 group-focus-visible:ring-primary/30"
-              [class.ring-2]="attachingPlateId() === plate.id"
-              [class.ring-primary]="attachingPlateId() === plate.id"
+              class="relative block h-20 w-20 overflow-hidden rounded-xl border border-base-300/80 bg-base-200 transition group-hover:border-primary/50 group-hover:shadow-sm group-focus-visible:border-primary group-focus-visible:ring-2 group-focus-visible:ring-primary/30"
+              [class.border-primary]="isHighlighted(plate.id)"
+              [class.ring-2]="isHighlighted(plate.id)"
+              [class.ring-primary]="isHighlighted(plate.id)"
             >
               <img
                 [ngSrc]="plate.src"
                 [alt]="plate.label"
-                width="80"
-                height="80"
-                class="h-20 w-20 object-cover"
+                fill
+                sizes="10vw"
+                priority
+                class="object-cover"
               />
               @if (attachingPlateId() === plate.id) {
                 <span class="absolute inset-0 grid place-items-center bg-base-100/55">
@@ -49,7 +52,11 @@ const MEAL_PHOTO_PROMPT = 'What am I eating?';
                 </span>
               }
             </span>
-            <span class="truncate px-0.5 text-[11px] font-semibold leading-tight text-base-content/70">
+            <span
+              class="truncate px-0.5 text-[11px] font-semibold leading-tight transition-colors"
+              [class.text-primary]="selectedPlateId() === plate.id"
+              [class.text-base-content/70]="selectedPlateId() !== plate.id"
+            >
               {{ plate.label }}
             </span>
           </button>
@@ -65,7 +72,13 @@ export class DemoMealPlates {
   readonly chat = input<CopilotChat | undefined>();
 
   protected readonly attachingPlateId = signal<string | null>(null);
+  protected readonly selectedPlateId = signal<string | null>(null);
   protected readonly attachError = signal<string | null>(null);
+
+  /** Highlight the plate while it attaches and keep it lit once selected. */
+  protected isHighlighted(id: string): boolean {
+    return this.attachingPlateId() === id || this.selectedPlateId() === id;
+  }
 
   protected readonly plates: readonly DemoPlate[] = [
     {
@@ -137,6 +150,9 @@ export class DemoMealPlates {
       if (!chat.inputValue().trim()) {
         chat.changeInput(MEAL_PHOTO_PROMPT);
       }
+
+      // Keep the chosen plate highlighted so the selection stays visible.
+      this.selectedPlateId.set(plate.id);
     } catch (error) {
       this.attachError.set(
         error instanceof Error ? error.message : `Could not attach ${plate.label}`,

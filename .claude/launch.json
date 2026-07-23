@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "macroquest-ui",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "start:ui"],
+      "port": 4200
+    }
+  ]
+}

@@ -5,7 +5,7 @@ usage() {
   cat <<'USAGE'
 Start a local llama.cpp OpenAI-compatible server for MacroQuest.
 
-By default this uses the Unsloth Gemma 4 12B QAT GGUF on Hugging Face. llama-server
+By default this uses the Unsloth Gemma 4 26B-A4B MoE QAT GGUF on Hugging Face. llama-server
 downloads weights into the normal Hugging Face cache on first run when they are not
 already present.
 
@@ -24,7 +24,7 @@ Environment:
                           org/repo/model-name.gguf
                         - Local filesystem path to a .gguf you already have
                         Default:
-                          unsloth/gemma-4-12B-it-qat-GGUF/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
+                          unsloth/gemma-4-26B-A4B-it-qat-GGUF/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
   LLAMA_MMPROJ_PATH     Optional multimodal projector path. Only used with a
                         local LLAMA_MODEL file (required for meal-photo vision
                         when not loading from Hugging Face).
@@ -36,8 +36,8 @@ Environment:
                         built-in chat web UI at http://host:port/ until you
                         paste the key into its settings.
   LLAMA_ALIAS           OpenAI model id exposed by llama-server.
-                        Default: gemma-4-12b-it-qat
-  LLAMA_CONTEXT_SIZE    Context size. Default: 32768
+                        Default: gemma-4-26b-a4b-it-qat
+  LLAMA_CONTEXT_SIZE    Context size. Default: 131072
   LLAMA_PARALLEL        Number of llama-server slots. Default: 1
   LLAMA_UBATCH_SIZE     Physical batch size for prompt/image encoding.
                         Default: 2048
@@ -53,7 +53,7 @@ Environment:
 
 Runtime pairing:
   LOCAL_MODEL_BASE_URL=http://127.0.0.1:8080/v1
-  LOCAL_MODEL_NAME=gemma-4-12b-it-qat
+  LOCAL_MODEL_NAME=gemma-4-26b-a4b-it-qat
   LOCAL_MODEL_API_KEY=local-llama
   pnpm run start:runtime
 USAGE
@@ -92,7 +92,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-LLAMA_MODEL="${LLAMA_MODEL:-unsloth/gemma-4-12B-it-qat-GGUF/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf}"
+LLAMA_MODEL="${LLAMA_MODEL:-unsloth/gemma-4-26B-A4B-it-qat-GGUF/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf}"
 LLAMA_MMPROJ_PATH="${LLAMA_MMPROJ_PATH:-}"
 
 LLAMA_SERVER_BIN="${LLAMA_SERVER_BIN:-}"
@@ -106,8 +106,8 @@ LLAMA_PORT="${LLAMA_PORT:-8080}"
 # built-in chat web UI at / cannot authenticate itself, so a key just breaks
 # it with "Invalid API Key". Export LLAMA_API_KEY to opt back in.
 LLAMA_API_KEY="${LLAMA_API_KEY:-}"
-LLAMA_ALIAS="${LLAMA_ALIAS:-gemma-4-12b-it-qat}"
-LLAMA_CONTEXT_SIZE="${LLAMA_CONTEXT_SIZE:-32768}"
+LLAMA_ALIAS="${LLAMA_ALIAS:-gemma-4-26b-a4b-it-qat}"
+LLAMA_CONTEXT_SIZE="${LLAMA_CONTEXT_SIZE:-131072}"
 LLAMA_PARALLEL="${LLAMA_PARALLEL:-1}"
 LLAMA_UBATCH_SIZE="${LLAMA_UBATCH_SIZE:-2048}"
 LLAMA_IMAGE_MAX_TOKENS="${LLAMA_IMAGE_MAX_TOKENS:-560}"

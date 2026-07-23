@@ -1,5 +1,11 @@
 import { computed } from '@angular/core';
-import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
+import {
+  patchState,
+  signalStoreFeature,
+  withComputed,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
 import { createMeal } from '../../domain/meal.factory';
 import {
   MacroGoals,
@@ -38,7 +44,9 @@ export function withMacroQuest() {
     withState(initialState),
     withComputed((store) => ({
       activeMeals: computed(() => getMealsForDate(store.meals(), store.activeDate())),
-      selectedMeal: computed(() => store.meals().find((meal) => meal.id === store.selectedMealId())),
+      selectedMeal: computed(() =>
+        store.meals().find((meal) => meal.id === store.selectedMealId()),
+      ),
       dailyTotals: computed(() => getDailyTotals(store.meals(), store.activeDate())),
     })),
     withComputed((store) => ({
@@ -66,22 +74,51 @@ export function withMacroQuest() {
         return meal;
       },
       applyMacroSwap(input: MacroSwapInput): MealEntry | undefined {
-        const selectedMeal = store.meals().find((meal) => meal.id === store.selectedMealId());
-        if (!selectedMeal) return undefined;
+        const selectedMeal =
+          store.meals().find((meal) => meal.id === store.selectedMealId()) ??
+          store.activeMeals()[0] ??
+          store.meals()[0];
+        const hasEmbeddedSourceMacros =
+          Number(input.baseCalories) > 0 ||
+          Number(input.baseProtein) > 0 ||
+          Number(input.baseCarbs) > 0 ||
+          Number(input.baseFat) > 0;
+        if (!selectedMeal && !hasEmbeddedSourceMacros) return undefined;
+
+        const sourceMeal =
+          selectedMeal ??
+          createMeal({
+            title: input.title?.trim() || 'Generated macro swap',
+            source: 'Open Generative UI sandbox',
+            notes: 'Restored from the source macros embedded in the generated sandbox action.',
+            items: [
+              {
+                id: '',
+                name: input.title?.trim() || 'Generated meal',
+                servingLabel: '1 meal',
+                servings: 1,
+                calories: Math.max(0, Number(input.baseCalories) || 0),
+                protein: Math.max(0, Number(input.baseProtein) || 0),
+                carbs: Math.max(0, Number(input.baseCarbs) || 0),
+                fat: Math.max(0, Number(input.baseFat) || 0),
+                confidence: 0.7,
+              },
+            ],
+          });
 
         const calorieMultiplier = clamp(Number(input.calorieMultiplier ?? 0.72), 0.2, 1.4);
         const proteinMultiplier = clamp(Number(input.proteinMultiplier ?? 1), 0.2, 1.6);
         const carbsMultiplier = clamp(Number(input.carbsMultiplier ?? 0.55), 0.1, 1.4);
         const fatMultiplier = clamp(Number(input.fatMultiplier ?? 0.7), 0.1, 1.4);
         const updatedMeal: MealEntry = {
-          ...selectedMeal,
-          title: input.title?.trim() || `Lighter ${selectedMeal.title}`,
+          ...sourceMeal,
+          title: input.title?.trim() || `Lighter ${sourceMeal.title}`,
           source: 'Open Generative UI sandbox',
           notes:
             input.notes?.trim() ||
             'Sandbox-generated lighter swap applied directly from the generated UI.',
           status: 'draft',
-          items: selectedMeal.items.map((item) => ({
+          items: sourceMeal.items.map((item) => ({
             ...item,
             calories: Math.max(0, Math.round(item.calories * calorieMultiplier)),
             protein: Math.max(0, Math.round(item.protein * proteinMultiplier)),
@@ -92,7 +129,9 @@ export function withMacroQuest() {
         };
 
         patchState(store, (state) => ({
-          meals: state.meals.map((meal) => (meal.id === updatedMeal.id ? updatedMeal : meal)),
+          meals: state.meals.some((meal) => meal.id === updatedMeal.id)
+            ? state.meals.map((meal) => (meal.id === updatedMeal.id ? updatedMeal : meal))
+            : [updatedMeal, ...state.meals],
           selectedMealId: updatedMeal.id,
           analysisStatus: 'ready' as const,
         }));

@@ -40,17 +40,41 @@ export function withCopilotKit() {
     })),
     withHooks({
       onInit(store) {
-        const agentContext = computed(() => ({
-          description:
-            'MacroQuest trusted Angular state from NgRx Signal Store. Use this context before proposing meal updates.',
-          value: JSON.stringify({
-            activeDate: store.activeDate(),
-            goals: store.goals(),
-            dailyTotals: store.dailyTotals(),
-            remaining: store.remaining(),
-            selectedMeal: store.selectedMeal(),
-          }),
-        }));
+        const agentContext = computed(() => {
+          const selectedMeal = store.selectedMeal();
+
+          return {
+            description:
+              'MacroQuest trusted Angular state from NgRx Signal Store. Use these exact values in generated UI and before proposing meal updates.',
+            value: JSON.stringify({
+              activeDate: store.activeDate(),
+              goals: store.goals(),
+              dailyTotals: store.dailyTotals(),
+              remaining: store.remaining(),
+              // Keep the model-facing selection concise and pre-computed. The
+              // sandbox prompt can now copy exact totals instead of trying to
+              // add individual food items or falling back to "--".
+              selectedMeal: selectedMeal
+                ? {
+                    title: selectedMeal.title,
+                    status: selectedMeal.status,
+                    totals: getMealTotals(selectedMeal),
+                  }
+                : null,
+              // Per-meal summaries let generated charts show contribution by
+              // meal, not just the aggregate daily totals.
+              meals: store
+                .activeMeals()
+                .slice(0, 12)
+                .map((meal) => ({
+                  title: meal.title,
+                  capturedAt: meal.capturedAt,
+                  status: meal.status,
+                  totals: getMealTotals(meal),
+                })),
+            }),
+          };
+        });
 
         connectMacroQuestSandboxStore(store);
         connectAgentContext(agentContext);

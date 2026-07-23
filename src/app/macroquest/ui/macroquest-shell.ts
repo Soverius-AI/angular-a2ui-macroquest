@@ -13,7 +13,6 @@ import { MealWorkbench } from './meal-workbench';
   templateUrl: './macroquest-shell.html',
 })
 export class MacroQuestShell {
-  // viewChild cannot target an ES private field (#); use TS private instead.
   protected readonly chat = viewChild(CopilotChat);
 
   protected readonly store = inject(MacroQuestStore);

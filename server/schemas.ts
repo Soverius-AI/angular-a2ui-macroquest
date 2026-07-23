@@ -7,67 +7,67 @@
  *    boundary so the rest of the server works with typed values and never
  *    re-checks shapes by hand.
  *
- * Semantic rules the grammar cannot express (ids resolve, totals match,
- * generated JS parses) live next to the generators in index.ts.
+ * Semantic rules the grammar cannot express (such as A2UI ids resolving and
+ * visible totals matching the draft) live next to their generators.
  */
-import { z } from "zod";
+import { z } from 'zod';
 
 export const modelGeneratedMealUIResponseFormat = {
-  type: "json_schema",
+  type: 'json_schema',
   json_schema: {
-    name: "macroquest_model_generated_meal_ui",
+    name: 'macroquest_model_generated_meal_ui',
     schema: {
-      type: "object",
+      type: 'object',
       additionalProperties: false,
-      required: ["mealDraft", "a2ui"],
+      required: ['mealDraft', 'a2ui'],
       properties: {
         mealDraft: {
-          type: "object",
+          type: 'object',
           additionalProperties: false,
-          required: ["title", "source", "notes", "items"],
+          required: ['title', 'source', 'notes', 'items'],
           properties: {
-            title: { type: "string" },
-            source: { type: "string" },
-            notes: { type: "string" },
+            title: { type: 'string' },
+            source: { type: 'string' },
+            notes: { type: 'string' },
             items: {
-              type: "array",
+              type: 'array',
               minItems: 1,
               maxItems: 6,
               items: {
-                type: "object",
+                type: 'object',
                 additionalProperties: false,
                 required: [
-                  "name",
-                  "servingLabel",
-                  "servings",
-                  "calories",
-                  "protein",
-                  "carbs",
-                  "fat",
-                  "confidence",
+                  'name',
+                  'servingLabel',
+                  'servings',
+                  'calories',
+                  'protein',
+                  'carbs',
+                  'fat',
+                  'confidence',
                 ],
                 properties: {
-                  name: { type: "string" },
-                  servingLabel: { type: "string" },
-                  servings: { type: "number" },
-                  calories: { type: "number" },
-                  protein: { type: "number" },
-                  carbs: { type: "number" },
-                  fat: { type: "number" },
-                  confidence: { type: "number" },
+                  name: { type: 'string' },
+                  servingLabel: { type: 'string' },
+                  servings: { type: 'number' },
+                  calories: { type: 'number' },
+                  protein: { type: 'number' },
+                  carbs: { type: 'number' },
+                  fat: { type: 'number' },
+                  confidence: { type: 'number' },
                 },
               },
             },
           },
         },
         a2ui: {
-          type: "object",
+          type: 'object',
           additionalProperties: false,
-          required: ["surfaceId", "components", "data"],
+          required: ['surfaceId', 'components', 'data'],
           properties: {
-            surfaceId: { type: "string" },
+            surfaceId: { type: 'string' },
             components: {
-              type: "array",
+              type: 'array',
               minItems: 4,
               // A 6-item meal with per-item rows needs ~33 components; a cap
               // that is too tight makes the grammar drop definitions that are
@@ -75,120 +75,120 @@ export const modelGeneratedMealUIResponseFormat = {
               maxItems: 40,
               // Per-component-type variants: llama.cpp turns this schema into
               // a grammar, so requiring `text` on Text and `children` on
-              // Row/Column here prevents the 12B model from ever emitting the
+              // Row/Column here prevents a small model from ever emitting the
               // invalid trees the validator would otherwise reject.
               items: {
                 anyOf: [
                   {
-                    type: "object",
+                    type: 'object',
                     additionalProperties: false,
-                    required: ["id", "component", "text"],
+                    required: ['id', 'component', 'text'],
                     properties: {
-                      id: { type: "string" },
-                      component: { const: "Text" },
-                      text: { type: "string", minLength: 1 },
+                      id: { type: 'string' },
+                      component: { const: 'Text' },
+                      text: { type: 'string', minLength: 1 },
                       variant: {
-                        type: "string",
-                        enum: ["h1", "h2", "h3", "h4", "h5", "caption", "body"],
+                        type: 'string',
+                        enum: ['h1', 'h2', 'h3', 'h4', 'h5', 'caption', 'body'],
                       },
                     },
                   },
                   {
-                    type: "object",
+                    type: 'object',
                     additionalProperties: false,
-                    required: ["id", "component", "children"],
+                    required: ['id', 'component', 'children'],
                     properties: {
-                      id: { type: "string" },
-                      component: { const: "Row" },
+                      id: { type: 'string' },
+                      component: { const: 'Row' },
                       children: {
-                        type: "array",
+                        type: 'array',
                         minItems: 1,
                         // Rows render on a ~380px chat panel; more than 4
                         // children overflow, so the grammar forbids it.
                         maxItems: 4,
-                        items: { type: "string" },
+                        items: { type: 'string' },
                       },
                       align: {
-                        type: "string",
-                        enum: ["start", "center", "end", "stretch"],
+                        type: 'string',
+                        enum: ['start', 'center', 'end', 'stretch'],
                       },
                       justify: {
-                        type: "string",
+                        type: 'string',
                         enum: [
-                          "start",
-                          "center",
-                          "end",
-                          "spaceBetween",
-                          "spaceAround",
-                          "spaceEvenly",
+                          'start',
+                          'center',
+                          'end',
+                          'spaceBetween',
+                          'spaceAround',
+                          'spaceEvenly',
                         ],
                       },
                     },
                   },
                   {
-                    type: "object",
+                    type: 'object',
                     additionalProperties: false,
-                    required: ["id", "component", "children"],
+                    required: ['id', 'component', 'children'],
                     properties: {
-                      id: { type: "string" },
-                      component: { const: "Column" },
+                      id: { type: 'string' },
+                      component: { const: 'Column' },
                       children: {
-                        type: "array",
+                        type: 'array',
                         minItems: 1,
-                        items: { type: "string" },
+                        items: { type: 'string' },
                       },
                       align: {
-                        type: "string",
-                        enum: ["start", "center", "end", "stretch"],
+                        type: 'string',
+                        enum: ['start', 'center', 'end', 'stretch'],
                       },
                       justify: {
-                        type: "string",
+                        type: 'string',
                         enum: [
-                          "start",
-                          "center",
-                          "end",
-                          "spaceBetween",
-                          "spaceAround",
-                          "spaceEvenly",
+                          'start',
+                          'center',
+                          'end',
+                          'spaceBetween',
+                          'spaceAround',
+                          'spaceEvenly',
                         ],
                       },
                     },
                   },
                   {
-                    type: "object",
+                    type: 'object',
                     additionalProperties: false,
-                    required: ["id", "component", "child"],
+                    required: ['id', 'component', 'child'],
                     properties: {
-                      id: { type: "string" },
-                      component: { const: "Card" },
-                      child: { type: "string" },
+                      id: { type: 'string' },
+                      component: { const: 'Card' },
+                      child: { type: 'string' },
                     },
                   },
                   {
-                    type: "object",
+                    type: 'object',
                     additionalProperties: false,
-                    required: ["id", "component", "child", "action"],
+                    required: ['id', 'component', 'child', 'action'],
                     properties: {
-                      id: { type: "string" },
-                      component: { const: "Button" },
-                      child: { type: "string" },
+                      id: { type: 'string' },
+                      component: { const: 'Button' },
+                      child: { type: 'string' },
                       variant: {
-                        type: "string",
-                        enum: ["primary", "borderless"],
+                        type: 'string',
+                        enum: ['primary', 'borderless'],
                       },
                       action: {
-                        type: "object",
+                        type: 'object',
                         additionalProperties: false,
-                        required: ["event"],
+                        required: ['event'],
                         properties: {
                           event: {
-                            type: "object",
+                            type: 'object',
                             additionalProperties: false,
-                            required: ["name"],
+                            required: ['name'],
                             properties: {
-                              name: { const: "applyMealDraft" },
+                              name: { const: 'applyMealDraft' },
                               context: {
-                                type: "object",
+                                type: 'object',
                                 additionalProperties: true,
                               },
                             },
@@ -198,15 +198,15 @@ export const modelGeneratedMealUIResponseFormat = {
                     },
                   },
                   {
-                    type: "object",
+                    type: 'object',
                     additionalProperties: false,
-                    required: ["id", "component"],
+                    required: ['id', 'component'],
                     properties: {
-                      id: { type: "string" },
-                      component: { const: "Divider" },
+                      id: { type: 'string' },
+                      component: { const: 'Divider' },
                       axis: {
-                        type: "string",
-                        enum: ["horizontal", "vertical"],
+                        type: 'string',
+                        enum: ['horizontal', 'vertical'],
                       },
                     },
                   },
@@ -214,7 +214,7 @@ export const modelGeneratedMealUIResponseFormat = {
               },
             },
             data: {
-              type: "object",
+              type: 'object',
               additionalProperties: true,
             },
           },
@@ -225,17 +225,17 @@ export const modelGeneratedMealUIResponseFormat = {
 } as const;
 
 export const intentResponseFormat = {
-  type: "json_schema",
+  type: 'json_schema',
   json_schema: {
-    name: "macroquest_intent",
+    name: 'macroquest_intent',
     schema: {
-      type: "object",
+      type: 'object',
       additionalProperties: false,
-      required: ["intent"],
+      required: ['intent'],
       properties: {
         intent: {
-          type: "string",
-          enum: ["analyze_meal", "macro_swap_lab", "macro_chart", "set_goals", "chat"],
+          type: 'string',
+          enum: ['analyze_meal', 'macro_swap_lab', 'macro_chart', 'set_goals', 'chat'],
         },
       },
     },
@@ -244,44 +244,49 @@ export const intentResponseFormat = {
 
 // Shared by every Open Generative UI widget (swap lab, macro chart).
 export const sandboxWidgetResponseFormat = {
-  type: "json_schema",
+  type: 'json_schema',
   json_schema: {
-    name: "macroquest_sandbox_widget",
+    name: 'macroquest_sandbox_widget',
     schema: {
-      type: "object",
+      type: 'object',
       additionalProperties: false,
       required: [
-        "initialHeight",
-        "placeholderMessages",
-        "css",
-        "html",
-        "jsFunctions",
-        "jsExpressions",
+        'initialHeight',
+        'placeholderMessages',
+        'css',
+        'html',
+        'jsFunctions',
+        'jsExpressions',
       ],
       properties: {
-        initialHeight: { type: "number" },
-        placeholderMessages: { type: "array", items: { type: "string" } },
-        css: { type: "string" },
-        html: { type: "string" },
-        jsFunctions: { type: "string" },
-        jsExpressions: { type: "array", items: { type: "string" } },
+        initialHeight: { type: 'number' },
+        placeholderMessages: { type: 'array', items: { type: 'string' } },
+        css: { type: 'string' },
+        html: { type: 'string' },
+        jsFunctions: { type: 'string', minLength: 1 },
+        jsExpressions: {
+          type: 'array',
+          minItems: 1,
+          maxItems: 1,
+          items: { type: 'string', minLength: 1 },
+        },
       },
     },
   },
 };
 
 export const macroGoalsResponseFormat = {
-  type: "json_schema",
+  type: 'json_schema',
   json_schema: {
-    name: "macroquest_goals",
+    name: 'macroquest_goals',
     schema: {
-      type: "object",
+      type: 'object',
       additionalProperties: false,
       properties: {
-        calories: { type: "number" },
-        protein: { type: "number" },
-        carbs: { type: "number" },
-        fat: { type: "number" },
+        calories: { type: 'number' },
+        protein: { type: 'number' },
+        carbs: { type: 'number' },
+        fat: { type: 'number' },
       },
     },
   },
@@ -338,22 +343,12 @@ export const mealUIResponseSchema = z.object({
   }),
 });
 export type MealUIResponse = z.infer<typeof mealUIResponseSchema>;
-export type A2UISurface = MealUIResponse["a2ui"];
-
-export const sandboxWidgetSchema = z.object({
-  initialHeight: z.number(),
-  placeholderMessages: z.array(z.string()),
-  css: z.string(),
-  html: z.string(),
-  jsFunctions: z.string(),
-  jsExpressions: z.array(z.string()),
-});
-export type SandboxWidget = z.infer<typeof sandboxWidgetSchema>;
+export type A2UISurface = MealUIResponse['a2ui'];
 
 export const intentResultSchema = z.object({
-  intent: z.enum(["analyze_meal", "macro_swap_lab", "macro_chart", "set_goals", "chat"]),
+  intent: z.enum(['analyze_meal', 'macro_swap_lab', 'macro_chart', 'set_goals', 'chat']),
 });
-export type Intent = z.infer<typeof intentResultSchema>["intent"];
+export type Intent = z.infer<typeof intentResultSchema>['intent'];
 
 export const macroGoalsSchema = z.object({
   calories: z.number().optional(),

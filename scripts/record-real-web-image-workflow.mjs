@@ -2,7 +2,7 @@ import { chromium } from '@playwright/test';
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-const appUrl = process.env.MACROQUEST_APP_URL ?? 'http://127.0.0.1:4300';
+const appUrl = process.env.MACROQUEST_APP_URL ?? 'http://127.0.0.1:4302';
 const outputDir = resolve('output/playwright');
 const imagePath = resolve('tests/fixtures/wikimedia-sushi-platter.jpg');
 const videoPath = join(outputDir, 'macroquest-local-llm-real-web-image.webm');

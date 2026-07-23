@@ -12,6 +12,10 @@ export const macroSwapSandboxSchema = z.object({
   title: z.string().optional(),
   notes: z.string().optional(),
   strategy: z.string().optional(),
+  baseCalories: z.number().nonnegative().optional(),
+  baseProtein: z.number().nonnegative().optional(),
+  baseCarbs: z.number().nonnegative().optional(),
+  baseFat: z.number().nonnegative().optional(),
   calorieMultiplier: z.number().optional(),
   proteinMultiplier: z.number().optional(),
   carbsMultiplier: z.number().optional(),
@@ -36,7 +40,8 @@ export async function applyMacroSwapFromSandbox(input: MacroSwapSandboxArgs) {
 
   const meal = sandboxStore.applyMacroSwap(input);
   if (!meal) {
-    const message = 'Analyze or select a meal before applying a sandbox swap.';
+    const message =
+      'This restored swap does not contain source macros. Generate the lighter swap again.';
     return {
       ok: false,
       message,

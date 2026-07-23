@@ -55,6 +55,10 @@ export interface MacroSwapInput {
   title?: string;
   notes?: string;
   strategy?: string;
+  baseCalories?: number;
+  baseProtein?: number;
+  baseCarbs?: number;
+  baseFat?: number;
   calorieMultiplier?: number;
   proteinMultiplier?: number;
   carbsMultiplier?: number;

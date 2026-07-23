@@ -23,6 +23,7 @@ export type MacroGoalsToolArgs = Partial<MacroGoals> & Record<string, unknown>;
 export type MacroQuestStateSlice = Pick<MacroQuestState, 'activeDate' | 'goals'>;
 
 export interface MacroQuestDerivedSignals {
+  activeMeals: Signal<MealEntry[]>;
   dailyTotals: Signal<MacroTotals>;
   remaining: Signal<MacroTotals>;
   selectedMeal: Signal<MealEntry | undefined>;

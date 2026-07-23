@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host 127.0.0.1 --port 4200",
-    "start:ui": "ng serve --host 127.0.0.1 --port 4200",
+    "start": "ng serve --host 127.0.0.1 --port 4302",
+    "start:ui": "ng serve --host 127.0.0.1 --port 4302",
     "start:runtime": "COPILOTKIT_TELEMETRY_DISABLED=true TMPDIR=/private/tmp tsx watch server/index.ts",
     "start:llama": "scripts/start-llama-server.sh",
     "start:all": "concurrently -k -n llama,runtime,ui -c magenta,blue,green \"pnpm run start:llama\" \"pnpm run start:runtime\" \"pnpm run start:ui\"",
