@@ -34,7 +34,8 @@ export function withCopilotKit() {
       mealPhotoAttachments: {
         enabled: true,
         accept: 'image/png,image/jpeg,image/webp',
-        maxSize: 8 * 1024 * 1024,
+        // Demo plates in public/meals include ~10MB JPEGs.
+        maxSize: 12 * 1024 * 1024,
       } satisfies AttachmentsConfig as AttachmentsConfig,
     })),
     withHooks({

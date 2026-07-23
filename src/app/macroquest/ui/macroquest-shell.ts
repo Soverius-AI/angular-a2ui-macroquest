@@ -1,19 +1,22 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { CopilotChat } from '@copilotkit/angular';
 import { MacroQuestStore } from '../application/macroquest.store';
 import { getMealTotals } from '../domain/nutrition';
+import { DemoMealPlates } from './demo-meal-plates';
 import { MacroDashboard } from './macro-dashboard';
 import { MealTimeline } from './meal-timeline';
 import { MealWorkbench } from './meal-workbench';
 
 @Component({
   selector: 'mq-shell',
-  imports: [CopilotChat, MacroDashboard, MealTimeline, MealWorkbench],
+  imports: [CopilotChat, DemoMealPlates, MacroDashboard, MealTimeline, MealWorkbench],
   templateUrl: './macroquest-shell.html',
 })
 export class MacroQuestShell {
-  protected readonly store = inject(MacroQuestStore);
+  // viewChild cannot target an ES private field (#); use TS private instead.
+  protected readonly chat = viewChild(CopilotChat);
 
+  protected readonly store = inject(MacroQuestStore);
   protected readonly showMealModal = signal(false);
 
   protected readonly selectedMealTotals = computed(() => {
