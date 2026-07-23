@@ -68,15 +68,11 @@ Then open `http://127.0.0.1:4200`. Ctrl+C stops all three processes.
 You can still start them separately with `pnpm run start:llama`,
 `pnpm run start:runtime`, and `pnpm run start:ui`.
 
-## OpenRouter (tool calls only)
+## OpenRouter (same agentic UI, remote model)
 
-In `openrouter` mode, the runtime uses CopilotKit’s normal `BuiltInAgent({ model })`
-wired to OpenRouter via `@ai-sdk/openai`.
-
-This is the “standard” CopilotKit experience: the model may call frontend tools
-(for example, updating goals or other registered tools), but the MacroQuest
-custom pipeline that *guarantees* A2UI catalog surfaces / sandbox widgets is not
-used.
+The MacroQuest **custom agent** (intent routing, A2UI catalog surfaces, sandbox
+widgets) runs for both local llama.cpp and OpenRouter. Switching provider only
+changes which OpenAI-compatible `/chat/completions` endpoint is called.
 
 Set your key and model in `.env` (gitignored):
 
@@ -97,7 +93,11 @@ Relevant variables:
 |----------|---------|
 | `COPILOT_MODEL_PROVIDER` | `local` or `openrouter` |
 | `OPENROUTER_API_KEY` | Your OpenRouter API key |
-| `OPENROUTER_MODEL` | Model id (default `google/gemini-2.5-flash`) |
+| `OPENROUTER_MODEL` | Model id (default `google/gemini-2.5-pro`) |
+
+With `COPILOT_MODEL_PROVIDER=openrouter`, meal analysis still emits A2UI catalog
+trees (`cpk-a2ui-surface` in chat) and the lighter-swap sandbox still works —
+no local llama required.
 
 ## Runtime
 
