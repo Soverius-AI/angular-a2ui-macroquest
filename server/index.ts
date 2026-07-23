@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -7,6 +8,7 @@ import {
   createCopilotEndpoint,
   InMemoryAgentRunner,
 } from "@copilotkit/runtime/v2";
+import { createOpenAI } from "@ai-sdk/openai";
 import { randomUUID } from "node:crypto";
 import type { z } from "zod";
 import type {
@@ -44,15 +46,24 @@ import {
 } from "./schemas";
 
 const port = Number(process.env.PORT ?? 3210);
-const modelBaseUrl =
+const modelProviderRaw =
+  process.env.COPILOT_MODEL_PROVIDER?.trim().toLowerCase() || "local";
+if (modelProviderRaw !== "local" && modelProviderRaw !== "openrouter") {
+  throw new Error(
+    `Unsupported COPILOT_MODEL_PROVIDER="${modelProviderRaw}". Use "local" or "openrouter".`,
+  );
+}
+const modelProvider = modelProviderRaw as "local" | "openrouter";
+
+const localModelBaseUrl =
   process.env.LOCAL_MODEL_BASE_URL?.trim() ??
   process.env.LOCAL_LLAMA_BASE_URL?.trim() ??
   "http://127.0.0.1:8080/v1";
-const modelName =
+const localModelName =
   process.env.LOCAL_MODEL_NAME?.trim() ??
   process.env.LOCAL_LLAMA_MODEL?.trim() ??
   "gemma-4-12b-it-qat";
-const modelApiKey =
+const localModelApiKey =
   process.env.LOCAL_MODEL_API_KEY?.trim() ??
   process.env.LOCAL_LLAMA_API_KEY?.trim() ??
   "local-llama";
@@ -61,6 +72,24 @@ const maxOutputTokens = Number(
     process.env.LOCAL_LLAMA_MAX_OUTPUT_TOKENS ??
     4096,
 );
+const openrouterBaseUrl = "https://openrouter.ai/api/v1";
+const openrouterModel =
+  process.env.OPENROUTER_MODEL?.trim() || "google/gemini-2.5-flash";
+const openrouterApiKey = process.env.OPENROUTER_API_KEY?.trim() ?? "";
+
+if (modelProvider === "openrouter" && !openrouterApiKey) {
+  throw new Error(
+    "COPILOT_MODEL_PROVIDER=openrouter requires OPENROUTER_API_KEY (see .env).",
+  );
+}
+
+/** Active chat-completions target: local llama.cpp or OpenRouter. */
+const modelBaseUrl =
+  modelProvider === "openrouter" ? openrouterBaseUrl : localModelBaseUrl;
+const modelName =
+  modelProvider === "openrouter" ? openrouterModel : localModelName;
+const modelApiKey =
+  modelProvider === "openrouter" ? openrouterApiKey : localModelApiKey;
 
 process.env.OPENAI_BASE_URL = modelBaseUrl;
 
@@ -80,6 +109,39 @@ const completionUrl = `${modelBaseUrl.replace(/\/$/, "")}/chat/completions`;
 const pendingMealDraftsBySurface = new Map<string, MealDraft>();
 const appliedMealDraftActionKeys = new Set<string>();
 
+function modelRequestHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    authorization: `Bearer ${modelApiKey}`,
+  };
+  if (modelProvider === "openrouter") {
+    headers["HTTP-Referer"] = "http://127.0.0.1:4200";
+    headers["X-Title"] = "MacroQuest";
+  }
+  return headers;
+}
+
+function parseModelJsonContent(raw: string): unknown {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    throw new Error("Model returned empty content.");
+  }
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (fenced?.[1]) {
+      return JSON.parse(fenced[1].trim());
+    }
+    const start = trimmed.indexOf("{");
+    const end = trimmed.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      return JSON.parse(trimmed.slice(start, end + 1));
+    }
+    throw new Error(`Model returned non-JSON content: ${trimmed.slice(0, 200)}`);
+  }
+}
 // ---------------------------------------------------------------------------
 // AG-UI message helpers
 // ---------------------------------------------------------------------------
@@ -196,9 +258,10 @@ function getApplyMealDraftAction(forwardedProps: unknown) {
 // ---------------------------------------------------------------------------
 
 /**
- * One JSON completion against llama.cpp. The response_format grammar
- * guarantees the shape at generation time; the zod parser is the single
- * runtime gate that turns the raw JSON into a typed value.
+ * One JSON completion against the active OpenAI-compatible endpoint (llama.cpp
+ * or OpenRouter). Prefer response_format json_schema when the provider supports
+ * it; Zod remains the runtime gate. Content may be fenced markdown on some
+ * remote models — parseModelJsonContent unwraps that.
  */
 async function completeJson<T>(options: {
   prompt: string;
@@ -216,10 +279,7 @@ async function completeJson<T>(options: {
 
   const response = await fetch(completionUrl, {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${modelApiKey}`,
-    },
+    headers: modelRequestHeaders(),
     body: JSON.stringify({
       model: modelName,
       messages: [{ role: "user", content }],
@@ -231,12 +291,12 @@ async function completeJson<T>(options: {
   });
 
   if (!response.ok) {
-    throw new Error(`Local model request failed: ${response.status} ${await response.text()}`);
+    throw new Error(`Model request failed: ${response.status} ${await response.text()}`);
   }
 
   const payload = await response.json();
   const raw: string = payload.choices?.[0]?.message?.content ?? "";
-  return options.parser.parse(JSON.parse(raw));
+  return options.parser.parse(parseModelJsonContent(raw));
 }
 
 async function* streamChatWithLocalGemma(
@@ -246,10 +306,7 @@ async function* streamChatWithLocalGemma(
 ): AsyncGenerator<string> {
   const response = await fetch(completionUrl, {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${modelApiKey}`,
-    },
+    headers: modelRequestHeaders(),
     body: JSON.stringify({
       model: modelName,
       messages: [
@@ -264,7 +321,7 @@ async function* streamChatWithLocalGemma(
   });
 
   if (!response.ok || !response.body) {
-    throw new Error(`Local model request failed: ${response.status} ${await response.text()}`);
+    throw new Error(`Model request failed: ${response.status} ${await response.text()}`);
   }
 
   const decoder = new TextDecoder();
@@ -670,7 +727,22 @@ function* toolCallEvents(parentMessageId: string, toolCallName: string, args: un
   } as any;
 }
 
-const agent = new BuiltInAgent({
+function createOpenRouterAgent() {
+  const openrouter = createOpenAI({
+    apiKey: openrouterApiKey,
+    baseURL: "https://openrouter.ai/api/v1",
+    headers: {
+      "HTTP-Referer": "http://127.0.0.1:4200",
+      "X-Title": "MacroQuest",
+    },
+  });
+
+  return new BuiltInAgent({
+    model: openrouter.chat(openrouterModel),
+  });
+}
+
+const customAgent = new BuiltInAgent({
   type: "custom",
   factory: async ({ input, abortSignal }) =>
     (async function* () {
@@ -816,6 +888,11 @@ const agent = new BuiltInAgent({
     })(),
 });
 
+const agent =
+  modelProvider === "openrouter"
+    ? createOpenRouterAgent()
+    : customAgent;
+
 const runtime = new CopilotRuntime({
   agents: { default: agent },
   runner: new InMemoryAgentRunner(),
@@ -857,6 +934,9 @@ app.get("/health", (c) =>
   c.json({
     ok: true,
     runtime: "macroquest",
+    provider: modelProvider,
+    agent:
+      modelProvider === "openrouter" ? "copilotkit-built-in" : "macroquest-custom",
     modelBaseUrl,
     modelName,
   }),
@@ -885,5 +965,11 @@ server.on("error", (error: NodeJS.ErrnoException) => {
 console.log(
   `MacroQuest runtime listening at http://127.0.0.1:${port}/api/copilotkit`,
 );
-console.log(`Local model endpoint: ${modelBaseUrl}`);
-console.log(`Local model name: ${modelName}`);
+console.log(`Model provider: ${modelProvider}`);
+console.log(
+  modelProvider === "openrouter"
+    ? "Using CopilotKit BuiltInAgent model wiring (tool calls)"
+    : "Using custom MacroQuest agent (A2UI catalog + sandbox widgets)",
+);
+console.log(`Model endpoint: ${modelBaseUrl}`);
+console.log(`Model name: ${modelName}`);
