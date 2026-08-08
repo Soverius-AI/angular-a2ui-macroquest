@@ -1,0 +1,24 @@
+name: Implementer
+
+on:
+  issues:
+    types: [opened, edited, labeled, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  enqueue:
+    runs-on: implementer
+    timeout-minutes: 2
+    steps:
+      - name: Deliver event to the durable local inbox
+        env:
+          DELIVERY_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          curl --fail-with-body --retry 3 \
+            -X POST http://127.0.0.1:4317/webhooks/github \
+            -H "content-type: application/json" \
+            -H "x-github-delivery: ${DELIVERY_ID}" \
+            -H "x-github-event: ${EVENT_NAME}" \
+            --data-binary "@${GITHUB_EVENT_PATH}"

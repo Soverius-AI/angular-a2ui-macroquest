@@ -1,0 +1,16 @@
+{
+  "setup": [
+    {
+      "name": "install dependencies",
+      "command": ["pnpm", "install", "--frozen-lockfile"],
+      "timeoutMs": 300000
+    }
+  ],
+  "checks": [
+    {
+      "name": "Angular production build",
+      "command": ["pnpm", "build"],
+      "timeoutMs": 180000
+    }
+  ]
+}
