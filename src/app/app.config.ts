@@ -1,6 +1,7 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideCopilotChatLabels, provideCopilotKit } from '@copilotkit/angular';
+import { provideCopilotKit } from '@copilotkit/angular';
+import { basicCatalog } from '@copilotkit/angular/a2ui';
 import { mockMealsInterceptor } from './macroquest/application/mock-meals.interceptor';
 
 if (typeof globalThis.fetch === 'function') {
@@ -11,6 +12,12 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(withInterceptors([mockMealsInterceptor])),
-    provideCopilotKit({ runtimeUrl: 'http://localhost:3210/api/copilotkit' }),
+    provideCopilotKit({
+      runtimeUrl: 'http://localhost:3210/api/copilotkit',
+      a2ui: {
+        catalog: basicCatalog,
+        includeSchema: true,
+      },
+    }),
   ],
 };

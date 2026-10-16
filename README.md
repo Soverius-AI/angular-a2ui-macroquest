@@ -160,3 +160,15 @@ Print the model server command without downloading:
 ```
 pnpm run start:llama -- --dry-run
 ```
+
+## Meal nutrition in the solution chat
+
+On `solution`, the Angular app uses the same A2UI basic catalog as `main`.
+The runtime injects the `render_a2ui` tool into the built-in agent. After photo
+analysis, or when asked to show a logged meal's nutrition, the agent uses the
+existing meal data to generate a card inside the chat with foods, servings,
+calories, protein, carbs, and fat.
+
+The card only displays the estimate. Ask to add the meal to open the existing
+human-in-the-loop confirmation; confirming saves it, and cancelling leaves the
+meal log unchanged. Rendering a card does not analyze the photo again.

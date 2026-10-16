@@ -5,14 +5,14 @@
 import { BuiltInAgent, defineTool } from '@copilotkit/runtime/v2';
 import { modelApiKey } from './config';
 import z from 'zod';
+import { buildChatSystemPrompt } from './prompts';
 import { forwardMealAnalysis } from './meal-analysis-activity';
 import { analyzeMealToolHandler, ToolExecutionOptions } from './prepared/analyze-meal-handler';
 
 export const agent = new BuiltInAgent({
   model: `openai/google/gemma-4-26b-a4b-it`,
   apiKey: modelApiKey,
-  prompt:
-    'You are MacroQuest, which is food logger. You are only answering questions about that and also help for generic questions on food, healthy things.',
+  prompt: buildChatSystemPrompt(),
   maxSteps: 3,
   tools: [
     defineTool({

@@ -48,6 +48,10 @@ app.get('/health', (c) =>
 const runtime = new CopilotRuntime({
   agents: { default: agent },
   runner: new InMemoryAgentRunner(),
+  a2ui: {
+    injectA2UITool: true,
+    defaultCatalogId: 'https://a2ui.org/specification/v0_9/basic_catalog.json',
+  },
 });
 
 const copilotHandler = createCopilotRuntimeHandler({
