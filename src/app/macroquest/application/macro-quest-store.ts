@@ -1,8 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Service, computed, inject, signal } from '@angular/core';
-import { type AttachmentsConfig } from '@copilotkit/angular';
+import {
+  connectAgentContext,
+  registerFrontendTool,
+  registerHumanInTheLoop,
+  registerRenderActivityMessage,
+  type AttachmentsConfig,
+} from '@copilotkit/angular';
 import { take } from 'rxjs';
-import { MealDraft } from '../../../../contracts/meal-draft-schema';
+import { MealDraft, mealDraftSchema } from '../../../../contracts/meal-draft-schema';
 import { FriendDayLog } from '../domain/friend-day';
 import {
   FoodItemEdit,
@@ -27,6 +33,9 @@ import {
   shiftQuestDate,
 } from '../domain/quest-day';
 import { mealLogUrl } from './mock-meals.interceptor';
+import z from 'zod';
+import { MealAnalysisActivity, mealAnalysisActivityContent } from '../ui/meal-analysis-activity';
+import { MealDraftConfirmation } from '../ui/meal-draft-confirmation';
 
 const initialState: MacroQuestState = {
   activeDate: new Date().toISOString().slice(0, 10),
@@ -76,6 +85,39 @@ export class MacroQuestStore {
   } satisfies AttachmentsConfig;
 
   constructor() {
+    connectAgentContext(() => ({
+      description:
+        'This is the meal log, with the active day, with the selected mealid and the goals',
+      value: JSON.stringify(this.state()),
+    }));
+
+    registerFrontendTool({
+      name: 'show_previous_day',
+      description: 'Switch to the previous day',
+      parameters: z.object({}),
+      handler: async () => this.showPreviousDay(),
+    });
+
+    registerFrontendTool({
+      name: 'show_next_day',
+      description: 'Switch to the next day',
+      parameters: z.object({}),
+      handler: async () => this.showNextDay(),
+    });
+
+    registerHumanInTheLoop({
+      name: 'add meal to meal log',
+      description: 'Adds a new meal to the current meal log',
+      parameters: mealDraftSchema,
+      component: MealDraftConfirmation,
+    });
+
+    registerRenderActivityMessage({
+      activityType: 'meal-analysis',
+      content: mealAnalysisActivityContent,
+      component: MealAnalysisActivity,
+    });
+
     this.http
       .get<FriendDayLog[]>(mealLogUrl)
       .pipe(take(1))

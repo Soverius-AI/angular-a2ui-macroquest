@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import { modelApiKey, modelBaseUrl, modelName } from '../config';
 import { mealDraftSchema } from '../../contracts/meal-draft-schema';
+import { showMealAnalysis } from '../meal-analysis-activity';
 
 export type ToolExecutionOptions = {
   messages: Array<{ role: string; content?: unknown }>;
@@ -30,7 +31,10 @@ export async function analyzeMealToolHandler(description: string, context?: Tool
       image_url: { url: `data:${image.mediaType};base64,${image.image}` },
     },
   ];
+
+  showMealAnalysis('Parsing the image', 'sending');
   const response = await fetchAnalysis(content, context);
+  showMealAnalysis('Estimating the nutritions...', 'sending');
 
   const payload = (await response.json()) as {
     choices?: Array<{ message?: { content?: string } }>;

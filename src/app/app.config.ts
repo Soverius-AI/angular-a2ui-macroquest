@@ -11,5 +11,6 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(withInterceptors([mockMealsInterceptor])),
+    provideCopilotKit({ runtimeUrl: 'http://localhost:3210/api/copilotkit' }),
   ],
 };

@@ -7,14 +7,13 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { CopilotRuntime, createCopilotRuntimeHandler, InMemoryAgentRunner } from '@copilotkit/runtime/v2';
+import {
+  CopilotRuntime,
+  createCopilotRuntimeHandler,
+  InMemoryAgentRunner,
+} from '@copilotkit/runtime/v2';
 import { agent } from './agent';
 import { modelBaseUrl, modelName, modelProvider, port } from './config';
-
-const runtime = new CopilotRuntime({
-  agents: { default: agent },
-  runner: new InMemoryAgentRunner(),
-});
 
 const app = new Hono();
 
@@ -45,6 +44,11 @@ app.get('/health', (c) =>
     modelName,
   }),
 );
+
+const runtime = new CopilotRuntime({
+  agents: { default: agent },
+  runner: new InMemoryAgentRunner(),
+});
 
 const copilotHandler = createCopilotRuntimeHandler({
   runtime,

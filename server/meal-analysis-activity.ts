@@ -1,4 +1,4 @@
-import { EventType, type BaseEvent } from '@ag-ui/core';
+import { BaseEvent, EventType } from '@ag-ui/core';
 import { Observable } from 'rxjs';
 import { mealAnalysisActivityType } from '../contracts/meal-analysis-activity';
 
