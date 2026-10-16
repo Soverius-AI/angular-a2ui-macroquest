@@ -172,3 +172,15 @@ calories, protein, carbs, and fat.
 The card only displays the estimate. Ask to add the meal to open the existing
 human-in-the-loop confirmation; confirming saves it, and cancelling leaves the
 meal log unchanged. Rendering a card does not analyze the photo again.
+
+## Open Generative UI macro chart
+
+Ask **"Show me a chart of my macros versus my goals."** The built-in agent
+calls `generateSandboxedUi` with model-authored HTML, CSS, and JavaScript.
+CopilotKit renders it in a sandbox inside the chat, with macro goal progress,
+meal calorie contributions, and a percentage/absolute-value toggle.
+
+Angular supplies precomputed daily totals, remaining macros, and per-meal
+summaries for the active day. The chart shows a snapshot from that request;
+ask for a new chart after changing the log or switching days. This example
+does not expose store-changing functions to the sandbox.

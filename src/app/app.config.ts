@@ -18,6 +18,7 @@ export const appConfig: ApplicationConfig = {
         catalog: basicCatalog,
         includeSchema: true,
       },
+      openGenerativeUI: {},
     }),
   ],
 };

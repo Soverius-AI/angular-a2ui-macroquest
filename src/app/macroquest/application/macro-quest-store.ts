@@ -23,6 +23,7 @@ import {
   getDailyTotals,
   getMacroScore,
   getMealsForDate,
+  getMealTotals,
   getQuestProgress,
   getRemainingMacros,
 } from '../domain/nutrition';
@@ -87,8 +88,16 @@ export class MacroQuestStore {
   constructor() {
     connectAgentContext(() => ({
       description:
-        'This is the meal log, with the active day, with the selected mealid and the goals',
-      value: JSON.stringify(this.state()),
+        'Trusted MacroQuest state: meal log, active day, selection, goals, and precomputed daily and per-meal totals. Use these exact values in generated UI.',
+      value: JSON.stringify({
+        ...this.state(),
+        dailyTotals: this.dailyTotals(),
+        remaining: this.remaining(),
+        mealSummaries: this.activeMeals().map((meal) => ({
+          title: meal.title,
+          totals: getMealTotals(meal),
+        })),
+      }),
     }));
 
     registerFrontendTool({

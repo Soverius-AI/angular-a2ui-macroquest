@@ -52,6 +52,7 @@ const runtime = new CopilotRuntime({
     injectA2UITool: true,
     defaultCatalogId: 'https://a2ui.org/specification/v0_9/basic_catalog.json',
   },
+  openGenerativeUI: true,
 });
 
 const copilotHandler = createCopilotRuntimeHandler({
