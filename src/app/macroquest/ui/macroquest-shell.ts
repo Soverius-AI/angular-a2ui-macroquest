@@ -3,11 +3,12 @@ import { CopilotChat } from '@copilotkit/angular';
 import { MacroQuestStore } from '../application/macro-quest-store';
 import { MacroDashboard } from './macro-dashboard';
 import { MealTimeline } from './meal-timeline';
+import { RecommendedMeals } from './recommended-meals';
 import { DemoMealPlates } from './demo-meal-plates';
 
 @Component({
   selector: 'mq-shell',
-  imports: [MacroDashboard, MealTimeline, DemoMealPlates, CopilotChat],
+  imports: [MacroDashboard, RecommendedMeals, MealTimeline, DemoMealPlates, CopilotChat],
   templateUrl: './macroquest-shell.html',
 })
 export class MacroQuestShell {

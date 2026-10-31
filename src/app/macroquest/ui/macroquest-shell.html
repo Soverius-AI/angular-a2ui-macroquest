@@ -19,6 +19,8 @@
         (mealSelected)="store.selectMeal($event)"
       />
 
+      <mq-recommended-meals />
+
       <mq-meal-timeline
         [meals]="store.activeMeals()"
         [dayLabel]="store.dayLabel()"
@@ -40,7 +42,7 @@
       <mq-demo-meal-plates [chat]="chat()" />
 
       <div class="min-h-0 flex-1 bg-base-100 p-3">
-        <!-- <copilot-chat [attachments]="store.mealPhotoAttachments" /> -->
+        <copilot-chat [attachments]="store.mealPhotoAttachments" />
       </div>
     </aside>
   </div>

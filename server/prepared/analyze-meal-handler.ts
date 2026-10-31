@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import { modelApiKey, modelBaseUrl, modelName } from '../config';
 import { mealDraftSchema } from '../../contracts/meal-draft-schema';
+import { showMealAnalysis } from '../meal-analysis-activity';
 
 export type ToolExecutionOptions = {
   messages: Array<{ role: string; content?: unknown }>;
@@ -30,17 +31,29 @@ export async function analyzeMealToolHandler(description: string, context?: Tool
       image_url: { url: `data:${image.mediaType};base64,${image.image}` },
     },
   ];
-  const response = await fetchAnalysis(content, context);
+  showMealAnalysis('Processing the image...', 'sending');
+  try {
+    const response = await fetchAnalysis(content, context);
+    showMealAnalysis('Preparing information', 'sending');
 
-  const payload = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  return {
-    ok: true,
-    isEstimate: true,
-    source: 'Photo estimate',
-    ...mealDraftSchema.parse(JSON.parse(payload.choices?.[0]?.message?.content ?? 'null')),
-  };
+    const payload = (await response.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const meal = mealDraftSchema.parse(
+      JSON.parse(payload.choices?.[0]?.message?.content ?? 'null'),
+    );
+    showMealAnalysis('Analysis complete', 'ready');
+
+    return {
+      ok: true,
+      isEstimate: true,
+      source: 'Photo estimate',
+      ...meal,
+    };
+  } catch (error) {
+    showMealAnalysis('Analysis failed', 'error');
+    throw error;
+  }
 }
 
 function handleImage(context?: ToolExecutionOptions) {

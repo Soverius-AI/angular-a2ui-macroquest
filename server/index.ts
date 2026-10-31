@@ -14,6 +14,7 @@ import { modelBaseUrl, modelName, modelProvider, port } from './config';
 const runtime = new CopilotRuntime({
   agents: { default: agent },
   runner: new InMemoryAgentRunner(),
+  a2ui: {},
 });
 
 const app = new Hono();

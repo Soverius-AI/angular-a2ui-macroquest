@@ -50,7 +50,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["node_modules/@copilotkit/angular/dist/styles.css", "src/styles.css"],
+            "styles": [
+              "src/material-theme.scss",
+              "node_modules/@copilotkit/angular/dist/styles.css",
+              "src/styles.css"
+            ],
             "allowedCommonJsDependencies": [
               "@jetbrains/websandbox",
               "chalk",
@@ -64,7 +68,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "4MB",
-                  "maximumError": "5MB"
+                  "maximumError": "6MB"
                 },
                 {
                   "type": "anyComponentStyle",
