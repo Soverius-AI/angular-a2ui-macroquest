@@ -19,6 +19,6 @@ import { RecommendedMeals } from './recommended-meals';
   templateUrl: './macroquest-shell.html',
 })
 export class MacroQuestShell {
-  protected readonly chat = viewChild(CopilotChat);
-  protected readonly store = inject(MacroQuestStore);
+  private readonly chat = viewChild(CopilotChat);
+  private readonly store = inject(MacroQuestStore);
 }
