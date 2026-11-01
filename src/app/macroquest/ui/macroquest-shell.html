@@ -21,22 +21,6 @@
 
       <mq-recommended-meals />
 
-      @if (surfaces().length) {
-        <section
-          class="rounded-2xl border border-base-300/70 bg-base-100 p-6"
-          aria-label="Generated interface"
-        >
-          @for (surface of surfaces(); track surface.id) {
-            <copilot-a2ui-activity-renderer
-              [activityType]="surface.activityType"
-              [content]="surface.content"
-              [message]="surface"
-              [agent]="agentStore().agent"
-            />
-          }
-        </section>
-      }
-
       <mq-meal-timeline
         [meals]="store.activeMeals()"
         [dayLabel]="store.dayLabel()"

@@ -1,7 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import { MacroGoals, MacroKind, MacroTotals, MealEntry } from '../domain/macroquest.models';
 import { getGoalPercent, getMealTotals } from '../domain/nutrition';
-import { A2uiStepPlayer } from './a2ui-step-player';
 
 interface MacroCard {
   kind: MacroKind;
@@ -13,7 +12,6 @@ interface MacroCard {
 
 @Component({
   selector: 'mq-dashboard',
-  imports: [A2uiStepPlayer],
   templateUrl: './macro-dashboard.html',
 })
 export class MacroDashboard {

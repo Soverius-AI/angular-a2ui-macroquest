@@ -108,11 +108,11 @@ export class MacroQuestStore {
       handler: async () => this.showNextDay(),
     });
 
-    registerHumanInTheLoop({
+    registerFrontendTool({
       name: 'add_meal_to_log',
       description: 'Add the meal to the meal log.',
       parameters: mealDraftSchema,
-      component: MealDraftConfirmation,
+      handler: async (mealDraft) => this.applyMealDraft(mealDraft),
     });
 
     registerRenderActivityMessage({

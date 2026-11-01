@@ -9,7 +9,7 @@ import { analyzeMealToolHandler, ToolExecutionOptions } from './prepared/analyze
 import { forwardMealAnalysis } from './meal-analysis-activity';
 
 export const agent = new BuiltInAgent({
-  model: `openai/google/gemma-4-26b-a4b-it`,
+  model: `openai/google/gemini-3.8-flash`,
   apiKey: modelApiKey,
   prompt:
     'You are MacroQuest, you are a food logger. Only answer questions about food and similar things.',
