@@ -1,8 +1,18 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideCopilotChatLabels, provideCopilotKit } from '@copilotkit/angular';
+import {
+  ApplicationConfig,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
+import {
+  anyActivityContentSchema,
+  provideCopilotChatLabels,
+  provideCopilotKit,
+  registerRenderActivityMessage,
+} from '@copilotkit/angular';
 import { mockMealsInterceptor } from './macroquest/application/mock-meals.interceptor';
-import { catalog } from './macroquest/ui/catalog';
+import { catalog } from './macroquest/ai/catalog';
+import { NoopActivity } from './macroquest/ai/noop-activity';
 
 if (typeof globalThis.fetch === 'function') {
   globalThis.fetch = globalThis.fetch.bind(globalThis);
@@ -28,6 +38,13 @@ export const appConfig: ApplicationConfig = {
           available: 'always',
         },
       ],
+    }),
+    provideAppInitializer(() => {
+      registerRenderActivityMessage({
+        activityType: 'a2ui-surface',
+        component: NoopActivity,
+        content: anyActivityContentSchema,
+      });
     }),
   ],
 };
