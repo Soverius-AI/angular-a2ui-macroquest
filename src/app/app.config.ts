@@ -1,5 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideCopilotChatLabels, provideCopilotKit } from '@copilotkit/angular';
+import { copilotRuntimeUrl } from './runtime-url';
 import {
   applyMacroSwapFromSandbox,
   macroSwapSandboxSchema,
@@ -13,7 +14,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideCopilotKit({
-      runtimeUrl: 'http://127.0.0.1:3210/api/copilotkit',
+      runtimeUrl: copilotRuntimeUrl,
       licenseKey: 'ck_pub_00000000000000000000000000000000',
       a2ui: {
         includeSchema: true,

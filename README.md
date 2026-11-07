@@ -8,6 +8,29 @@ sandbox payload. The runtime validates A2UI, streams sandbox tool arguments,
 and lets CopilotKit render the result through its standard middleware and
 Angular renderer.
 
+## Browser-local Gemma 4 E2B (no inference backend)
+
+An opt-in static deployment runs **Transformers.js + ONNX Runtime Web**, using
+`onnx-community/gemma-4-E2B-it-ONNX`—the same model artifact as `ai-rag-basic`. A service
+worker exposes CopilotKit's existing AG-UI/SSE protocol; a tab-owned dedicated
+worker runs inference. Existing chat components, store tools and sandbox RPC
+remain unchanged.
+
+```bash
+pnpm install
+pnpm start:browser-local       # http://127.0.0.1:4303 — static/dev files only
+pnpm build:browser-local       # deploy dist/angular-a2ui-macroquest/browser/
+```
+
+Weights load only after explicit consent. This early-preview path is currently
+**text-only**, prefers WebGPU (`q4f16`), and offers a clearly labeled optional
+WASM/CPU fallback (`q4`). It requires HTTPS (or localhost) and has no remote
+inference fallback. No fastest-runtime claim is made without device benchmarks.
+The default `pnpm start:all` workflow below remains the Node/llama.cpp mode.
+
+See **[browser-local plan, architecture, deployment and verification](docs/BROWSER_LOCAL.md)**
+for model licensing/cache details, runtime compatibility and known limitations.
+
 ## Configuration
 
 Install the dependencies via pnpm:

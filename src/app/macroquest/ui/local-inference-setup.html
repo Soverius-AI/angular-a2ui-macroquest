@@ -1,0 +1,89 @@
+<main class="mx-auto flex min-h-screen max-w-2xl items-center px-6 py-12">
+  <section
+    class="w-full rounded-2xl border border-base-300 bg-base-100 p-8"
+    aria-labelledby="local-heading"
+  >
+    <p class="mb-2 text-sm font-semibold uppercase tracking-widest text-success">
+      MacroQuest · Browser-local Transformers.js
+    </p>
+    <h1 id="local-heading" class="mb-4 text-3xl font-bold">Gemma 4 E2B, running locally</h1>
+    <p class="mb-4">
+      Transformers.js loads the same ONNX model as ai-rag-basic. Your prompts and app state are not
+      sent to an inference backend. A service worker preserves the existing CopilotKit protocol,
+      while a dedicated worker runs ONNX Runtime Web.
+    </p>
+    <p class="mb-2 text-sm font-medium">Model artifact</p>
+    <code class="mb-5 block break-all rounded-lg bg-base-200 p-3 text-sm">{{ model }}</code>
+    <ul class="mb-6 list-disc space-y-2 pl-5 text-sm">
+      <li>
+        WebGPU uses q4f16 weights and requires shader-f16. If permitted below, WASM uses q4 weights
+        when GPU loading is unavailable or fails. The dashboard reports the actual execution device;
+        CPU inference is much slower.
+      </li>
+      <li>
+        The first load downloads several gigabytes from Hugging Face. Caching is optional; disable
+        it when browser quota or free disk space is insufficient. Reloads always reinitialize the
+        model.
+      </li>
+      <li>
+        Keep one inference tab open. This text-only preview supports chat, meal descriptions, goals,
+        A2UI, and sandbox widgets. Please describe meals in text instead of attaching photos.
+      </li>
+      <li>
+        The selected model's license applies. The model and tokenizer use the same pinned Hugging
+        Face revision. No alternative model or remote inference service is substituted.
+      </li>
+    </ul>
+    <form (submit)="load($event)" class="space-y-4">
+      <label class="flex items-start gap-3">
+        <input
+          class="checkbox mt-1"
+          type="checkbox"
+          [checked]="cache()"
+          (change)="cache.set($any($event.target).checked)"
+          [disabled]="runtime.loading()"
+        />
+        <span>Cache model files on this device. Uncheck to load without persistent caching.</span>
+      </label>
+      <label class="flex items-start gap-3">
+        <input
+          class="checkbox mt-1"
+          type="checkbox"
+          [checked]="allowWasmFallback()"
+          (change)="allowWasmFallback.set($any($event.target).checked)"
+          [disabled]="runtime.loading()"
+        />
+        <span
+          >Allow slower WASM / CPU fallback if WebGPU loading fails. This may download additional q4
+          weights.</span
+        >
+      </label>
+      <label class="flex items-start gap-3">
+        <input
+          class="checkbox mt-1"
+          type="checkbox"
+          [checked]="consent()"
+          (change)="consent.set($any($event.target).checked)"
+          [disabled]="runtime.loading()"
+        />
+        <span>I accept the model license and allow downloading the model on this device.</span>
+      </label>
+      <div class="flex gap-3">
+        <button class="btn btn-primary" type="submit" [disabled]="!consent() || runtime.loading()">
+          {{ runtime.loading() ? 'Loading Gemma…' : 'Load model locally' }}
+        </button>
+        @if (runtime.loading()) {
+          <button class="btn btn-outline" type="button" (click)="runtime.cancel()">Cancel</button>
+        }
+      </div>
+    </form>
+    <p class="mt-5 break-words text-sm" role="status" aria-live="polite">{{ runtime.status() }}</p>
+    @if (error()) {
+      <p class="mt-3 break-words text-sm text-error" role="alert">{{ error() }}</p>
+    }
+    <p class="mt-5 text-xs opacity-70">
+      Requires HTTPS or localhost. Generated nutrition estimates are for demonstration, not medical
+      advice. Static hosting serves files; inference stays in the browser.
+    </p>
+  </section>
+</main>

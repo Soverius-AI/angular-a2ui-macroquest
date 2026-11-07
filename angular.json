@@ -74,6 +74,24 @@
               ],
               "outputHashing": "all"
             },
+            "browser-local": {
+              "browser": "src/main.browser-local.ts",
+              "fileReplacements": [
+                {
+                  "replace": "src/app/runtime-url.ts",
+                  "with": "src/app/runtime-url.browser-local.ts"
+                }
+              ],
+              "assets": [
+                { "glob": "**/*", "input": "public" },
+                { "glob": "browser-local-sw.js", "input": "tmp/browser-local", "output": "/" },
+                {
+                  "glob": "**/*",
+                  "input": "tmp/browser-local/browser-local",
+                  "output": "/browser-local/"
+                }
+              ]
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -85,6 +103,9 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
+            "browser-local": {
+              "buildTarget": "angular-a2ui-macroquest:build:development,browser-local"
+            },
             "production": {
               "buildTarget": "angular-a2ui-macroquest:build:production"
             },
