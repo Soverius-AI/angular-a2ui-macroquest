@@ -12,6 +12,7 @@
     "prepare:byok": "node scripts/build-byok.mjs",
     "start:byok": "pnpm prepare:byok && ng serve --configuration byok --host 127.0.0.1 --port 4303",
     "build:byok": "pnpm prepare:byok && ng build --configuration production,byok",
+    "deploy:byok": "firebase deploy --only hosting",
     "typecheck:byok": "tsc --project tsconfig.byok.json",
     "test:byok:unit": "tsx --test tests/byok/*.test.ts",
     "test:byok": "pnpm build:byok && playwright test --config playwright.byok.config.ts",

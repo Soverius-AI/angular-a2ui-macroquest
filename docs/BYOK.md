@@ -69,7 +69,15 @@ terminates the worker and the key with it. The service worker never sees it.
 pnpm install
 pnpm start:byok          # http://127.0.0.1:4303
 pnpm build:byok          # deploy dist/angular-a2ui-macroquest/browser/ to any static host
+pnpm deploy:byok         # Firebase Hosting (project in .firebaserc; builds first)
 ```
+
+`firebase.json` is a plain static-hosting config: SPA rewrite to `index.html`,
+`index.html`, `byok-sw.js` and `byok/` served with `no-cache` so a new deploy
+replaces the service worker and the agent worker at once, hashed bundles
+cached as immutable. Do not run `firebase init hosting` again: the CLI's
+framework detection tries to load `vite` from the project root, which pnpm
+does not hoist, and aborts.
 
 Requires HTTPS or localhost (service workers). `scripts/build-byok.mjs`
 bundles the service worker and the agent worker with esbuild into `tmp/byok`,

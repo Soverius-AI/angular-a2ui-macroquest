@@ -53,3 +53,7 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# Firebase CLI
+firebase-debug.log
+.firebase/
