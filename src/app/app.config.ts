@@ -1,10 +1,10 @@
+import { copilotRuntimeUrl } from './runtime-url';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideCopilotChatLabels, provideCopilotKit } from '@copilotkit/angular';
-import { copilotRuntimeUrl } from './runtime-url';
-import {
-  applyMacroSwapFromSandbox,
-  macroSwapSandboxSchema,
-} from './macroquest/application/macroquest-sandbox';
+import { mockMealsInterceptor } from './macroquest/application/mock-meals.interceptor';
+import { catalog } from './macroquest/ai/catalog';
+import { macroQuestDesignSkill } from './macroquest/ai/design-skill';
 
 if (typeof globalThis.fetch === 'function') {
   globalThis.fetch = globalThis.fetch.bind(globalThis);
@@ -13,56 +13,25 @@ if (typeof globalThis.fetch === 'function') {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideHttpClient(withInterceptors([mockMealsInterceptor])),
     provideCopilotKit({
       runtimeUrl: copilotRuntimeUrl,
-      licenseKey: 'ck_pub_00000000000000000000000000000000',
-      a2ui: {
-        includeSchema: true,
-      },
-      // Static starter prompts only. These render purely client-side (no model
-      // call). A dynamic `after-first-message` config was removed: it fires a
-      // second suggestion-generation request that competes with the main chat
-      // request on the single-slot local llama.cpp server, starving the main
-      // response (RUN_STARTED -> RUN_FINISHED with no content).
+      a2ui: { catalog, includeSchema: true },
+      openGenerativeUI: { designSkill: macroQuestDesignSkill },
+      enableInspector: false,
       suggestionsConfig: [
         {
-          available: 'before-first-message',
           suggestions: [
             {
-              title: 'Analyze a meal',
-              message: 'Analyze a grilled chicken bowl with rice and beans.',
-            },
-            {
-              title: 'Set macro goals',
-              message: 'Set my daily goals to 2000 calories and 150g protein.',
-            },
-            {
-              title: 'Lighter swap',
-              message: 'Suggest a lighter version of my current meal.',
-            },
-            {
-              title: 'Chart my macros',
-              message: 'Show me a chart of my macros versus my goals.',
+              title: 'Recommend meals',
+              message: `Ask me from which cuisine I should recommend meals.
+                After that show me a few recommendatiosn and add an option to add them to the meal log.
+                Each meal should also show an image.`,
             },
           ],
+          available: 'always',
         },
       ],
-      openGenerativeUI: {
-        sandboxFunctions: [
-          {
-            name: 'applyMacroSwap',
-            description:
-              'Apply a generated lighter macro swap to the selected MacroQuest meal in the Angular NgRx Signal Store.',
-            parameters: macroSwapSandboxSchema,
-            handler: applyMacroSwapFromSandbox,
-          },
-        ],
-      },
-    }),
-    provideCopilotChatLabels({
-      chatInputPlaceholder: 'Ask Gemma about a meal...',
-      chatDisclaimerText:
-        'MacroQuest estimates nutrition for demo purposes and is not medical advice.',
     }),
   ],
 };

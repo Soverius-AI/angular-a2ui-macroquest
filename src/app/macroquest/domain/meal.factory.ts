@@ -1,3 +1,5 @@
+import z from 'zod';
+import { MealDraft, mealDraftSchema } from '../../../../contracts/meal-draft-schema';
 import { FoodItem, MealDraftInput, MealEntry } from './macroquest.models';
 import { clamp } from './nutrition';
 
@@ -14,14 +16,14 @@ function normalizeFoodItem(item: FoodItem): FoodItem {
   };
 }
 
-export function createMeal(input: MealDraftInput): MealEntry {
+export function createMeal(input: MealDraft): MealEntry {
   return {
     id: createId('meal'),
     title: input.title,
-    source: input.source ?? 'Agent estimate',
+    source: 'Agent estimate',
     capturedAt: new Date().toISOString(),
     status: 'draft',
-    notes: input.notes ?? 'Review portions before confirming.',
-    items: input.items.map(normalizeFoodItem),
+    notes: input.notes ?? 'Review the portions, then confirm.',
+    items: input.items.map((item) => normalizeFoodItem({ ...item, id: '' })),
   };
 }

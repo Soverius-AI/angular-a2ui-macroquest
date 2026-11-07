@@ -4,11 +4,13 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "rootDir": "./src",
+    "rootDir": ".",
     "types": []
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "contracts/**/*.ts",
+    "byok/providers.ts"
   ],
   "exclude": [
     "src/**/*.spec.ts"

@@ -58,5 +58,3 @@ export const modelApiKey =
   modelProvider === "openrouter" ? openrouterApiKey : localModelApiKey;
 
 process.env.OPENAI_BASE_URL = modelBaseUrl;
-
-export const completionUrl = `${modelBaseUrl.replace(/\/$/, "")}/chat/completions`;

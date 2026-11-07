@@ -48,9 +48,15 @@ export function getMealsForDate(meals: MealEntry[], activeDate: string): MealEnt
   return meals.filter((meal) => meal.capturedAt.slice(0, 10) === activeDate);
 }
 
+/** A draft is an estimate the user has not confirmed yet; it does not count toward the day. */
+export function isCountedMeal(meal: MealEntry): boolean {
+  return meal.status === 'confirmed';
+}
+
 export function getDailyTotals(meals: MealEntry[], activeDate: string): MacroTotals {
   return roundMacroTotals(
     getMealsForDate(meals, activeDate)
+      .filter(isCountedMeal)
       .map(getMealTotals)
       .reduce(addMacroTotals, emptyMacroTotals()),
   );

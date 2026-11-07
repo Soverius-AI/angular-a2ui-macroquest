@@ -51,18 +51,14 @@ export interface ServingChange {
   servings: number;
 }
 
-export interface MacroSwapInput {
-  title?: string;
-  notes?: string;
-  strategy?: string;
-  baseCalories?: number;
-  baseProtein?: number;
-  baseCarbs?: number;
-  baseFat?: number;
-  calorieMultiplier?: number;
-  proteinMultiplier?: number;
-  carbsMultiplier?: number;
-  fatMultiplier?: number;
+export interface FoodItemEdit {
+  mealId: string;
+  itemId: string;
+  name?: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 }
 
 export interface MacroQuestState {

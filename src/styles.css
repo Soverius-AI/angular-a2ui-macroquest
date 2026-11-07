@@ -172,24 +172,18 @@
     background-image: linear-gradient(90deg, var(--mq-a), var(--mq-b));
     transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   }
+}
 
-  /* ---- Gradient primary button ---- */
-  .mq-btn-primary {
-    @apply border-0 text-white;
-    background-image: linear-gradient(135deg, #047857, #0d9488);
-    box-shadow: 0 12px 24px -12px rgba(13, 148, 136, 0.8);
-  }
-
-  .mq-btn-primary:hover {
-    background-image: linear-gradient(135deg, #059669, #0e9488);
-    box-shadow: 0 16px 30px -12px rgba(13, 148, 136, 0.9);
-  }
-
-  .macro-shell .copilot-panel .copilotKitChat {
+/* CopilotKit overrides stay outside the cascade layers on purpose: the library's
+   component styles are unlayered, so only unlayered rules of higher specificity can
+   replace them (the `.macro-shell` ancestor supplies that). Rules that meet an
+   inline style add to the box (a spacer, a margin) instead of overriding it. */
+.macro-shell {
+  .copilot-panel .copilotKitChat {
     background: transparent;
   }
 
-  .macro-shell .copilot-panel copilot-chat {
+  .copilot-panel copilot-chat {
     height: 100%;
   }
 
@@ -199,8 +193,8 @@
      the scroll bottom (and the last messages) beneath the floating input and
      making the scroll-to-bottom button target a bottom that lies outside the
      panel. Pin it to the panel's real height instead. */
-  .macro-shell .copilot-panel copilot-chat-view-scroll-view > div {
-    height: 100% !important;
+  .copilot-panel copilot-chat-view-scroll-view > div {
+    height: 100%;
   }
 
   /* Stock CopilotKit measures the floating input's height once, during the
@@ -208,90 +202,205 @@
      up after ~5.6s of retries. inputContainerHeight then stays 0 forever:
      the scroll reserve collapses to 32px (messages hide under the input) and
      the scroll-to-bottom button is placed at bottom: 16px, on top of the
-     input. Floor both to the input stack's real footprint (~132px + slack).
-     !important intentionally beats the component's inline styles. */
-  .macro-shell .copilot-panel copilot-chat-view-scroll-view [style*="padding-bottom"] {
-    padding-bottom: 180px !important;
+     input. Both values are inline styles, so the reserve is added next to them:
+     a spacer after the content (32px + 148px) and a margin on the button
+     (16px + 164px), each landing at the input stack's footprint (~180px). */
+  .copilot-panel copilot-chat-view-scroll-view [style*="padding-bottom"]::after {
+    content: '';
+    display: block;
+    height: 148px;
   }
 
-  .macro-shell .copilot-panel copilot-chat-view-scroll-view [class*="cpk:z-30"][style*="bottom"] {
-    bottom: 180px !important;
+  .copilot-panel copilot-chat-view-scroll-view [class*="cpk:z-30"][style*="bottom"] {
+    margin-bottom: 164px;
   }
 
-  .macro-shell .copilot-panel copilot-chat-message-view {
+  .copilot-panel copilot-chat-message-view {
     gap: 0.75rem;
     padding: 1rem 0.75rem 0;
   }
 
-  .macro-shell .copilot-panel copilot-chat-user-message-renderer {
+  .copilot-panel copilot-chat-user-message-renderer {
     @apply max-w-[86%] rounded-box bg-neutral px-4 py-3 text-sm leading-relaxed text-neutral-content shadow-md;
   }
 
-  .macro-shell .copilot-panel copilot-chat-assistant-message > div {
+  .copilot-panel copilot-chat-assistant-message > div {
     @apply max-w-[94%] py-2 text-base-content;
   }
 
-  .macro-shell .copilot-panel copilot-chat-assistant-message-renderer > div {
+  .copilot-panel copilot-chat-assistant-message-renderer > div {
     @apply rounded-box border border-base-300 bg-base-100 px-4 py-3 leading-relaxed shadow-sm;
   }
 
-  .macro-shell .copilot-panel copilot-chat-assistant-message-renderer p {
-    margin: 0;
+  /* An assistant message that only carries tool calls has no text: no empty bubble. */
+  .copilot-panel copilot-chat-assistant-message-renderer > div:empty {
+    display: none;
   }
 
-  .macro-shell .copilot-panel .copilotKitInput {
-    @apply rounded-box border border-base-300 bg-base-100 shadow-lg;
-  }
-
-  .macro-shell .copilot-panel copilot-chat-input button {
-    @apply rounded-lg bg-primary text-primary-content;
-  }
-
-  .macro-shell .copilot-panel copilot-chat-view-disclaimer {
-    @apply block px-4 pt-2 text-center text-xs leading-snug text-base-content/60;
-  }
-
-  .macro-shell .copilot-panel copilot-a2ui-activity-renderer {
+  /* A2UI surfaces: CopilotKit's Angular catalog renderer (copilot-a2ui-* elements;
+     copilot-a2ui-child/node/slot are display:contents wrappers), dressed like the app. */
+  copilot-a2ui-activity-renderer {
     @apply my-3 block;
   }
 
-  .macro-shell .copilot-panel cpk-a2ui-surface {
-    @apply block overflow-hidden rounded-box border border-primary/20 bg-base-100 shadow-md;
+  copilot-a2ui-surface {
+    @apply block w-full min-w-0;
   }
 
-  .macro-shell .copilot-panel cpk-a2ui-surface .a2ui-surface {
-    @apply p-4;
+  copilot-a2ui-surface .a2ui-surface {
+    @apply w-full min-w-0;
   }
 
-  .macro-shell .copilot-panel cpk-a2ui-surface h2 {
-    @apply mb-2 text-lg font-semibold text-base-content;
+  copilot-a2ui-card {
+    @apply block w-full min-w-0 rounded-box border border-primary/20 bg-base-100 p-4 shadow-md;
   }
 
-  /* Lit's styleMap serializes inline styles WITHOUT a space after the colon
-     ("flex-direction:row"), so keep both attribute spellings covered. */
-  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction: row"],
-  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction:row"] {
-    @apply my-3 flex-wrap gap-2;
+  copilot-a2ui-card copilot-a2ui-card {
+    @apply border-base-300 p-3 shadow-none;
   }
 
-  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction: row"] > cpk-a2ui-node,
-  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction:row"] > cpk-a2ui-node {
-    flex: 1 1 6rem;
+  copilot-a2ui-column {
+    @apply flex w-full min-w-0 flex-col gap-2;
   }
 
-  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction: row"] span,
-  .macro-shell .copilot-panel cpk-a2ui-surface div[style*="flex-direction:row"] span {
-    @apply block min-h-10 rounded-box border border-base-300 bg-base-200 px-3 py-2 font-semibold text-base-content;
+  /* Rows wrap into tiles that stay readable at chat width; items are the real
+     components because the wrappers in between are display:contents. */
+  copilot-a2ui-row,
+  copilot-a2ui-list {
+    @apply flex w-full min-w-0 flex-wrap gap-2;
   }
 
-  .macro-shell .copilot-panel cpk-a2ui-surface button {
-    @apply mt-2 min-h-11 w-full px-4 py-3 font-bold;
-    border-radius: var(--radius-field) !important;
-    background: var(--color-primary) !important;
-    color: var(--color-primary-content) !important;
+  copilot-a2ui-row > copilot-a2ui-child > copilot-a2ui-node > copilot-slot > copilot-a2ui-card,
+  copilot-a2ui-row > copilot-a2ui-child > copilot-a2ui-node > copilot-slot > copilot-a2ui-column,
+  copilot-a2ui-list > copilot-a2ui-child > copilot-a2ui-node > copilot-slot > copilot-a2ui-card,
+  copilot-a2ui-list > copilot-a2ui-child > copilot-a2ui-node > copilot-slot > copilot-a2ui-column,
+  copilot-a2ui-list > copilot-a2ui-child > copilot-a2ui-node > copilot-slot > mq-meal-card {
+    flex: 1 1 10rem;
+    min-width: 0;
+    width: auto;
   }
 
-  .macro-shell .copilot-panel cpk-a2ui-surface button span {
-    @apply min-h-0 border-0 bg-transparent p-0 text-inherit;
+  /* MealCards: a responsive grid instead of the model's justify/align choices, in the chat
+     (one column) and in the main area (as many equal columns as fit, equal heights). */
+  copilot-a2ui-row:has(> copilot-a2ui-child > copilot-a2ui-node > copilot-slot > mq-meal-card),
+  copilot-a2ui-list:has(> copilot-a2ui-child > copilot-a2ui-node > copilot-slot > mq-meal-card) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+
+  /* Items set their own alignment, so the Row's inline align-items has no say. */
+  mq-meal-card {
+    @apply block min-w-0;
+    max-width: 30rem;
+    align-self: stretch;
+  }
+
+  mq-surface:has(copilot-a2ui-surface) {
+    @apply mt-5 block;
+  }
+
+  copilot-a2ui-row > copilot-a2ui-child > copilot-a2ui-node > copilot-slot > copilot-a2ui-text,
+  copilot-a2ui-row > copilot-a2ui-child > copilot-a2ui-node > copilot-slot > copilot-a2ui-button {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  copilot-a2ui-text {
+    @apply block min-w-0;
+    overflow-wrap: anywhere;
+  }
+
+  copilot-a2ui-text h1 {
+    @apply text-xl font-black tracking-tight text-base-content;
+  }
+
+  copilot-a2ui-text h2 {
+    @apply text-lg font-bold text-base-content;
+  }
+
+  copilot-a2ui-text h3 {
+    @apply text-base font-bold text-base-content;
+  }
+
+  copilot-a2ui-text small {
+    @apply text-xs text-base-content/60;
+  }
+
+  copilot-a2ui-text span,
+  copilot-a2ui-text p {
+    @apply text-sm leading-snug text-base-content;
+  }
+
+  copilot-a2ui-divider {
+    @apply my-1 block w-full border-t border-base-300;
+  }
+
+  copilot-a2ui-image img {
+    @apply w-full rounded-box object-cover;
+  }
+
+  copilot-a2ui-button {
+    @apply flex w-full;
+  }
+
+  /* The catalog button ships its own colors; the app's primary wins. */
+  copilot-a2ui-button button.button {
+    @apply mt-1 min-h-10 w-full px-4 py-2 text-sm font-bold;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--color-primary);
+    color: var(--color-primary-content);
+    box-shadow: none;
+  }
+
+  copilot-a2ui-button button:hover {
+    filter: brightness(1.05);
+  }
+
+  /* Direct tiles of a row read as chips, like the original surfaces. */
+  copilot-a2ui-row > copilot-a2ui-child > copilot-a2ui-node > copilot-slot > copilot-a2ui-column {
+    @apply rounded-box border border-base-300 bg-base-200/60 p-3;
+  }
+
+  copilot-a2ui-button button copilot-a2ui-text span {
+    @apply text-inherit;
+  }
+
+  .copilot-panel copilot-chat-assistant-message-renderer p {
+    margin: 0;
+  }
+
+  .copilot-panel .copilotKitInput {
+    @apply rounded-box border border-base-300 bg-base-100 shadow-lg;
+  }
+
+  .copilot-panel copilot-chat-input button {
+    @apply rounded-lg bg-primary text-primary-content;
+  }
+
+  .copilot-panel copilot-chat-view-disclaimer {
+    @apply block px-4 pt-2 text-center text-xs leading-snug text-base-content/60;
+  }
+}
+
+/* Browser-local mode: the status strip and the shell share the viewport height. */
+.byok-frame {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+.byok-frame > .byok-content {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+@media (min-width: 80rem) {
+  .byok-frame .macro-shell {
+    min-height: 0;
+    height: 100%;
+  }
+  .byok-frame .macro-shell > div {
+    height: 100%;
   }
 }

@@ -1,39 +1,146 @@
 @if (meal(); as meal) {
   <div class="flex flex-col gap-4 p-6">
-    <div>
-      <h3 class="text-lg font-bold text-slate-800">{{ meal.title }}</h3>
-      <p class="text-sm text-slate-500">{{ meal.source }}{{ meal.notes ? ' · ' + meal.notes : '' }}</p>
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0 flex-1">
+        @if (editingTitle()) {
+          <input
+            class="input input-bordered w-full max-w-sm text-lg font-bold"
+            aria-label="Meal name"
+            [value]="meal.title"
+            (input)="updateTitle(meal.id, $event)"
+          />
+        } @else {
+          <h3 class="text-lg font-bold tracking-tight text-slate-800">{{ meal.title }}</h3>
+        }
+        <p class="mt-1 text-sm text-slate-500">{{ meal.source }}{{ meal.notes ? ' · ' + meal.notes : '' }}</p>
+      </div>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm shrink-0 gap-1.5 rounded-full px-3.5 font-semibold"
+        [class.btn-outline]="!editingTitle()"
+        [attr.aria-expanded]="editingTitle()"
+        [attr.aria-label]="editingTitle() ? 'Done editing meal name' : 'Edit meal name'"
+        (click)="toggleTitle()"
+      >
+        @if (editingTitle()) {
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          Done
+        } @else {
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+          </svg>
+          Edit
+        }
+      </button>
     </div>
 
     <div class="flex flex-col gap-2">
       @for (item of meal.items; track item.id) {
-        <div class="grid items-center gap-x-6 gap-y-3 rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_60px]">
-          <div>
-            <strong class="block text-sm font-bold text-slate-800">{{ item.name }}</strong>
-            <span class="text-xs text-slate-400">{{ item.servingLabel }}</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold text-slate-400">Servings</span>
-            <input
-              class="input input-bordered input-sm w-20"
-              type="number"
-              min="0.1"
-              max="6"
-              step="0.1"
-              aria-label="Servings"
-              [value]="item.servings"
-              (input)="updateServings(meal.id, item.id, $event)"
-            />
-          </div>
-          <div class="flex flex-wrap items-center gap-1.5">
-            <span class="badge badge-ghost text-xs">{{ item.calories * item.servings | number: '1.0-0' }} kcal</span>
-            <span class="badge badge-info badge-soft text-xs">{{ item.protein * item.servings | number: '1.0-0' }}p</span>
-            <span class="badge badge-warning badge-soft text-xs">{{ item.carbs * item.servings | number: '1.0-0' }}c</span>
-            <span class="badge badge-error badge-soft text-xs">{{ item.fat * item.servings | number: '1.0-0' }}f</span>
-          </div>
-          <span class="badge badge-success badge-soft justify-self-end text-xs">
-            {{ item.confidence | percent: '1.0-0' }}
-          </span>
+        <div
+          class="rounded-2xl border bg-base-100 px-5 py-4 transition"
+          [class.border-slate-100]="editingItemId() !== item.id"
+          [class.border-primary/40]="editingItemId() === item.id"
+          [class.shadow-sm]="editingItemId() === item.id"
+        >
+          @if (editingItemId() === item.id) {
+            <div class="flex flex-col gap-3">
+              <div class="w-full max-w-sm">
+                <input
+                  class="input input-bordered input-sm w-full font-bold"
+                  aria-label="Food name"
+                  [value]="item.name"
+                  (input)="updateName(meal.id, item.id, $event)"
+                />
+                <p class="mt-1 flex items-center gap-2 text-xs text-slate-400">
+                  <span class="truncate">{{ item.servingLabel }}</span>
+                  <span class="badge badge-success badge-soft shrink-0">
+                    {{ item.confidence | percent: '1.0-0' }}
+                  </span>
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <label class="flex w-24 flex-col gap-1">
+                  <span class="text-xs font-semibold text-base-content/60">Servings</span>
+                  <input
+                    class="input input-bordered input-sm w-full"
+                    type="number"
+                    min="0.1"
+                    max="6"
+                    step="0.1"
+                    aria-label="Servings"
+                    [value]="item.servings"
+                    (input)="updateServings(meal.id, item.id, $event)"
+                  />
+                </label>
+                @for (field of macroFields; track field.key) {
+                  <label class="flex w-24 flex-col gap-1">
+                    <span class="whitespace-nowrap text-xs font-semibold text-base-content/60">
+                      {{ field.label }}
+                      <span class="font-normal">{{ field.unit }}</span>
+                    </span>
+                    <input
+                      class="input input-bordered input-sm w-full"
+                      type="number"
+                      min="0"
+                      [step]="field.step"
+                      [attr.aria-label]="field.label"
+                      [value]="lineAmount(item, field.key)"
+                      (input)="updateMacro(meal.id, item.id, item.servings, field.key, $event)"
+                    />
+                  </label>
+                }
+              </div>
+              <div class="flex justify-end">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm shrink-0 gap-1.5 whitespace-nowrap rounded-full px-3.5 font-semibold"
+                  aria-expanded="true"
+                  [attr.aria-label]="'Done editing ' + item.name"
+                  (click)="toggleItem(item.id)"
+                >
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  Done
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div
+              class="grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
+              (click)="toggleItem(item.id)"
+            >
+              <div class="min-w-0">
+                <strong class="block truncate text-sm font-bold text-slate-800">{{ item.name }}</strong>
+                <span class="block truncate text-xs text-slate-400">{{ item.servingLabel }}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="badge badge-ghost text-xs whitespace-nowrap">{{ lineAmount(item, 'calories') }} kcal</span>
+                <span class="badge badge-info badge-soft text-xs whitespace-nowrap">{{ lineAmount(item, 'protein') }}p</span>
+                <span class="badge badge-warning badge-soft text-xs whitespace-nowrap">{{ lineAmount(item, 'carbs') }}c</span>
+                <span class="badge badge-error badge-soft text-xs whitespace-nowrap">{{ lineAmount(item, 'fat') }}f</span>
+                <span class="badge badge-success badge-soft text-xs whitespace-nowrap">
+                  {{ item.confidence | percent: '1.0-0' }}
+                </span>
+                <button
+                  type="button"
+                  class="btn btn-primary btn-outline btn-sm shrink-0 gap-1.5 whitespace-nowrap rounded-full px-3.5 font-semibold"
+                  aria-expanded="false"
+                  [attr.aria-label]="'Edit ' + item.name"
+                  (click)="$event.stopPropagation(); toggleItem(item.id)"
+                >
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          }
         </div>
       }
     </div>

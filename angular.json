@@ -50,7 +50,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["node_modules/@copilotkit/angular/dist/styles.css", "src/styles.css"],
+            "styles": [
+              "src/material-theme.scss",
+              "node_modules/@copilotkit/angular/dist/styles.css",
+              "src/styles.css"
+            ],
             "allowedCommonJsDependencies": [
               "@jetbrains/websandbox",
               "chalk",
@@ -64,7 +68,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "4MB",
-                  "maximumError": "5MB"
+                  "maximumError": "6MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -74,21 +78,21 @@
               ],
               "outputHashing": "all"
             },
-            "browser-local": {
-              "browser": "src/main.browser-local.ts",
+            "byok": {
+              "browser": "src/main.byok.ts",
               "fileReplacements": [
                 {
                   "replace": "src/app/runtime-url.ts",
-                  "with": "src/app/runtime-url.browser-local.ts"
+                  "with": "src/app/runtime-url.byok.ts"
                 }
               ],
               "assets": [
                 { "glob": "**/*", "input": "public" },
-                { "glob": "browser-local-sw.js", "input": "tmp/browser-local", "output": "/" },
+                { "glob": "byok-sw.js", "input": "tmp/byok", "output": "/" },
                 {
                   "glob": "**/*",
-                  "input": "tmp/browser-local/browser-local",
-                  "output": "/browser-local/"
+                  "input": "tmp/byok/byok",
+                  "output": "/byok/"
                 }
               ]
             },
@@ -103,8 +107,8 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "browser-local": {
-              "buildTarget": "angular-a2ui-macroquest:build:development,browser-local"
+            "byok": {
+              "buildTarget": "angular-a2ui-macroquest:build:development,byok"
             },
             "production": {
               "buildTarget": "angular-a2ui-macroquest:build:production"

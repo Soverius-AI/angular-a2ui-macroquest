@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "rootDir": ".",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    "types": []
+  },
+  "include": ["byok/**/*.ts", "contracts/**/*.ts"],
+  "exclude": ["**/*.test.ts"]
+}

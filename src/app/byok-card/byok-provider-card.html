@@ -1,0 +1,177 @@
+<section
+  class="byok-card grid max-h-full w-full overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-2xl lg:grid-cols-[22rem_1fr]"
+  aria-labelledby="byok-heading"
+>
+  <aside class="byok-plate relative flex min-h-0 flex-col gap-6 overflow-y-auto p-6 text-white">
+    <div class="flex items-center justify-between">
+      <span class="byok-tile flex h-16 w-16 items-center justify-center rounded-2xl bg-white">
+        @if (selected().logo) {
+          <img
+            class="h-10 w-10"
+            [src]="selected().logo"
+            [alt]="selected().name"
+            width="40"
+            height="40"
+          />
+        } @else {
+          <span class="text-2xl font-black text-indigo-900">{{ selected().name.slice(0, 1) }}</span>
+        }
+      </span>
+      @if (badge(); as mark) {
+        <span class="flex items-center gap-2 text-xs font-medium text-white/85">
+          @if (mark.logo) {
+            <img class="h-5 w-5" [src]="mark.logo" alt="" width="20" height="20" />
+          }
+          {{ mark.text }}
+        </span>
+      }
+    </div>
+
+    <div>
+      <p class="text-sm text-white/70">{{ eyebrow() }}</p>
+      <p class="mt-1 text-4xl font-black leading-none tracking-tight">{{ productName() }}</p>
+      <p class="mt-2 text-lg font-medium text-white/90">{{ tagline() }}</p>
+    </div>
+
+    <fieldset class="grid grid-cols-2 gap-2" [disabled]="connecting()">
+      <legend class="mb-2 text-sm text-white/70">Provider</legend>
+      @for (provider of providers(); track provider.id) {
+        <label
+          class="byok-option cursor-pointer rounded-xl border px-3 py-2 transition-colors"
+          [class.border-white]="selected().id === provider.id"
+          [class.bg-white/15]="selected().id === provider.id"
+          [class.border-white/30]="selected().id !== provider.id"
+        >
+          <input
+            class="sr-only"
+            type="radio"
+            name="byok-provider"
+            [value]="provider.id"
+            [checked]="selected().id === provider.id"
+            (change)="choose(provider.id)"
+          />
+          <span class="block text-base font-bold">{{ provider.name }}</span>
+          <span class="block text-xs text-white/75">{{ provider.defaultModel }}</span>
+        </label>
+      }
+    </fieldset>
+
+    <dl class="byok-specs grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+      <dt class="text-white/60">Endpoint</dt>
+      <dd class="break-all font-medium">{{ selected().host }}</dd>
+      @for (fact of facts(); track fact.label) {
+        <dt class="text-white/60">{{ fact.label }}</dt>
+        <dd class="font-medium">{{ fact.value }}</dd>
+      }
+    </dl>
+  </aside>
+
+  <div class="flex min-h-0 flex-col gap-5 overflow-y-auto p-6 sm:p-8">
+    <div>
+      <h1 id="byok-heading" class="text-3xl font-black tracking-tight">
+        Connect {{ selected().name }}
+      </h1>
+      <p class="mt-3 max-w-prose text-base-content/80">
+        Paste a key from your own account. Requests go from this browser tab to
+        {{ selected().host }} and nowhere else; the key is held in memory only and discarded when
+        you change provider or close the tab.
+      </p>
+    </div>
+
+    <form (submit)="submit($event)" class="space-y-4">
+      <label class="block">
+        <span class="mb-1 block text-sm font-medium">{{ selected().name }} API key</span>
+        <input
+          class="input input-bordered w-full"
+          type="password"
+          autocomplete="off"
+          spellcheck="false"
+          [placeholder]="selected().keyPlaceholder"
+          [value]="apiKey()"
+          (input)="apiKey.set($any($event.target).value)"
+          [disabled]="connecting()"
+        />
+        <a
+          class="mt-1 block text-xs text-base-content/60 underline"
+          [href]="selected().keysUrl"
+          target="_blank"
+          rel="noopener"
+          >Get a key from {{ selected().name }}</a
+        >
+      </label>
+      <label class="block">
+        <span class="mb-1 block text-sm font-medium">Model</span>
+        <select
+          class="select select-bordered w-full"
+          [value]="preset()"
+          (change)="pick($any($event.target).value)"
+          [disabled]="connecting()"
+        >
+          @for (option of selected().models; track option.id) {
+            <option [value]="option.id">{{ option.label }} · {{ option.id }}</option>
+          }
+          <option value="">Other model id…</option>
+        </select>
+      </label>
+      @if (!preset()) {
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium">Model id</span>
+          <input
+            class="input input-bordered w-full"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            [placeholder]="selected().defaultModel"
+            [value]="customModel()"
+            (input)="customModel.set($any($event.target).value)"
+            [disabled]="connecting()"
+          />
+        </label>
+      }
+      <label class="flex items-start gap-3">
+        <input
+          class="checkbox checkbox-primary mt-0.5"
+          type="checkbox"
+          [checked]="consent()"
+          (change)="consent.set($any($event.target).checked)"
+          [disabled]="connecting()"
+        />
+        <span>I understand the key is sent only to {{ selected().host }} by this page.</span>
+      </label>
+      <div class="flex flex-wrap items-center gap-3 pt-2">
+        <button
+          class="btn btn-primary btn-lg rounded-full px-7"
+          type="submit"
+          [disabled]="!canConnect()"
+        >
+          {{ connecting() ? 'Connecting…' : 'Connect' }}
+        </button>
+      </div>
+    </form>
+
+    @if (status()) {
+      <p class="break-words text-sm text-base-content/80" role="status" aria-live="polite">
+        {{ status() }}
+      </p>
+    }
+    @if (error()) {
+      <p class="break-words text-sm text-error" role="alert">{{ error() }}</p>
+    }
+    @if (smallPrint()) {
+      <p class="text-xs text-base-content/60">{{ smallPrint() }}</p>
+    }
+    @if (footer(); as mark) {
+      <a
+        class="mt-auto flex items-center gap-3 self-start pt-2 text-xs text-base-content/60"
+        [href]="mark.href ?? null"
+        target="_blank"
+        rel="noopener"
+      >
+        @if (mark.logo) {
+          <img class="h-6 w-auto" [src]="mark.logo" alt="" height="24" />
+        }
+        <span>{{ mark.text }}</span>
+      </a>
+    }
+  </div>
+</section>
